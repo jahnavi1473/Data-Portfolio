@@ -34,10 +34,6 @@ A VBA macro allows:
 
 ---
 
-## 📷 Dashboard Preview
-(Add screenshot images here)
-
-
 ---
 
 ## 👩‍💻 Author
