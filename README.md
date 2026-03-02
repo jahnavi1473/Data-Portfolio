@@ -12,7 +12,9 @@ My work focuses on transforming raw data into meaningful business insights throu
 
 📍 Hyderabad, India  
 📧 jahnavirangasai.parimi@gmail.com  
+
 🔗 LinkedIn: https://www.linkedin.com/in/jahnavi-rangasai-parimi-b21364251/ 
+
 🔗 GitHub: https://github.com/jahnavi1473/Data-Portfolio  
 
 ---
@@ -22,22 +24,34 @@ My work focuses on transforming raw data into meaningful business insights throu
 ---
 
 ## 1️⃣ Retail Sales Performance Analytics  
-**Tools:** Excel | Power Query | VBA | Power BI | DAX  
 
-### 📌 Project Overview
-Analyzed 500K+ retail transactions to identify revenue trends, top-performing products, and regional sales performance.
+**Tools:** Microsoft Excel | PivotTables | Data Cleaning | Data Validation | Data Visualization | VBA  
 
-### 🔍 Key Work Done
-- Cleaned and standardized raw transaction data
-- Removed cancellations and invalid pricing entries
-- Built KPI dashboards using PivotTables and slicers
-- Developed Power BI dashboard with revenue, growth, and product insights
-- Automated reporting refresh using VBA macro
+---
 
-### 📈 Business Insights
-- Identified revenue concentration among top product categories
-- Analyzed monthly sales seasonality trends
-- Evaluated country-level revenue contribution
+### 📌 Project Overview  
+Performed transaction-level analysis on 500K+ retail sales records to clean raw data, validate revenue calculations, and build KPI dashboards for business reporting.
+
+---
+
+### 🔍 Key Work Done  
+
+- Cleaned and standardized raw transaction data by handling cancelled invoices, correcting negative quantities, and resolving pricing inconsistencies  
+- Validated revenue computation logic (Quantity × Unit Price) to ensure accurate sales reporting  
+- Performed data preparation and structured analysis-ready datasets using Excel  
+- Built interactive KPI dashboards using PivotTables, slicers, and charts to track:
+  - Monthly revenue trends  
+  - Product-level performance  
+  - Country-level sales distribution  
+- Automated recurring report generation and export processes using VBA macros  
+
+---
+
+### 📈 Business Insights  
+
+- Identified revenue concentration among top-performing product categories  
+- Analyzed seasonality patterns across months  
+- Evaluated country-wise revenue contribution to support regional performance comparison  
 
 📂 Folder: `Retail-Sales-Analytics-Excel`
 
