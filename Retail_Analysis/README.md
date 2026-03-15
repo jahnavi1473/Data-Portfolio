@@ -1,199 +1,243 @@
-Online Retail Sales Analysis — Insights Summary
-Dataset Overview
+# Retail Sales Analytics Dashboard
 
-The Online Retail dataset represents transactional data for a UK-based online retail store selling various gift and household items across multiple countries. Each record represents a product purchased within an order (invoice).
+## 📊 Project Overview
 
-After data cleaning and modeling, the final analytical dataset contained:
+This project analyzes retail transaction data to uncover insights about **sales performance, product trends, and customer behavior**.
 
-Metric	Value
-Total Revenue	£10,062,821
-Total Orders	24,156
-Total Units Sold	5,381,202
-Total Customers	4,363
-Average Order Value	£416.58
-1. Overall Business Performance
-Total Revenue
+The analysis was conducted using:
 
-The business generated £10.06M in total revenue during the analyzed period.
+- **SQL (PostgreSQL)** for data cleaning and transformation  
+- **Power BI** for interactive dashboard visualization  
 
-Insight
+The final result is a **3-page Business Intelligence dashboard** that helps understand:
 
-The dataset indicates a strong online retail operation with multi-million revenue across a single year of activity.
+- Overall business performance
+- Product performance
+- Customer purchasing behavior
 
-Total Orders
+---
 
-A total of 24,156 unique orders were processed.
+# 📁 Dataset
 
-Insight
+The dataset used is the **Online Retail Dataset**, which contains transactional data from a UK-based online retailer.
 
-This indicates consistent transaction activity and a steady flow of customer purchases throughout the year.
+### Key Attributes
 
-Total Units Sold
+- Invoice Number
+- Stock Code
+- Product Description
+- Quantity
+- Invoice Date
+- Unit Price
+- Customer ID
+- Country
 
-The store sold 5.38 million product units.
+Total records analyzed: **~540,000 transactions**
 
-Insight
+---
 
-The high number of units sold suggests that many products are relatively low-priced and purchased in bulk quantities.
+# 🧹 Data Cleaning (SQL)
 
-Total Customers
+Data preparation was performed using **PostgreSQL**.
 
-There were 4,363 identifiable customers.
+Key cleaning steps:
 
-Insight
+- Removed cancelled orders (`InvoiceNo starting with 'C'`)
+- Removed non-product stock codes  
+  (`B, D, M, C2, AMAZONFEE, BANK CHARGES, CRUK`)
+- Removed invalid transactions with **negative quantities**
+- Investigated and handled **missing product descriptions**
+- Standardized Stock Codes using `UPPER()`
+- Created a **net revenue model** for valid transactions
 
-The business serves a moderately sized customer base, with many customers making repeat purchases.
+---
 
-Average Order Value
+# ⭐ Data Modeling
 
-The average order value is approximately £416.58.
+A **Star Schema** was implemented to structure the data.
 
-Insight
+## Fact Table
 
-Customers typically purchase multiple products per order, suggesting bulk buying behavior or wholesale-like purchasing patterns.
+**fact_sales**
 
-2. Sales Trend Analysis
-Monthly Revenue Trends
+Contains transactional metrics:
 
-Revenue shows strong seasonal patterns.
+- InvoiceNo
+- StockCode
+- CustomerID
+- Order Date
+- Quantity
+- Unit Price
+- Revenue
 
-Month	Key Observation
-September 2011	Revenue begins to increase
-October 2011	Continued growth
-November 2011	Peak revenue month (£1.48M)
+---
 
-Insight
+## Dimension Tables
 
-Sales increase significantly toward the end of the year, likely due to holiday shopping demand.
+### dim_product
+- StockCode
+- Product Name
+- Product Type
 
-Monthly Order Volume
+### dim_customer
+- CustomerID
+- Country
 
-The highest number of orders also occurred in November (3,288 orders).
+### dim_date
+- Order Date
+- Day
+- Month
+- Year
 
-Insight
+### dim_country
+- Country
 
-The increase in orders aligns with the revenue spike, confirming that the growth is driven by higher purchasing activity rather than price changes.
+---
 
-Daily Sales Trends
+# ⚠ Data Quality Handling
 
-Daily revenue fluctuates significantly.
+Some transactions contained **missing Customer IDs**.
 
-Highest daily revenue
+Instead of removing these records, they were labeled as:
 
-14 Nov 2011 → £113,315
+```
+Unknown Customer
+```
 
-Insight
+This ensures **revenue data is preserved** while maintaining analytical clarity.
 
-Large spikes in sales occur during peak seasonal shopping periods, reinforcing the strong holiday effect.
+---
 
-3. Product Performance Analysis
-Top Products by Revenue
-Product	Revenue
-DOTCOM POSTAGE	£206K
-REGENCY CAKESTAND 3 TIER	£164K
-WHITE HANGING HEART T-LIGHT HOLDER	£99K
+# 🔎 Business Analysis (SQL)
 
-Insight
+Key business questions explored:
 
-Shipping-related revenue contributes significantly to overall sales, while several household products generate substantial revenue.
+- Monthly revenue trends
+- Top performing products by revenue
+- Sales distribution by country
+- Product category contribution
+- Customer revenue contribution
+- Customer order frequency
 
-Top Products by Units Sold
-Product	Units Sold
-SMALL POPCORN HOLDER	56,450
-WORLD WAR 2 GLIDERS ASSTD DESIGNS	53,847
-JUMBO BAG RED RETROSPOT	47,363
+---
 
-Insight
+# 📈 Dashboard Overview
 
-Some products sell in extremely high volumes but may not generate the highest revenue, indicating low-price high-volume items.
+The Power BI dashboard consists of **three analytical pages**.
 
-Revenue Distribution Across Products
+---
 
-Observation
+## 1️⃣ Business Overview
 
-A relatively small number of products generate a large portion of revenue.
+Provides a high-level snapshot of company performance.
 
-Insight
+Includes:
 
-This suggests a Pareto-like pattern, where a subset of products drives most business performance.
+- Total Revenue
+- Total Orders
+- Total Customers
+- Average Order Value
+- Total Units Sold
+- Monthly Revenue Trend
+- Top Products by Revenue
+- Revenue by Country
 
-4. Geographic Sales Analysis
-Revenue by Country
-Country	Revenue
-United Kingdom	£8.5M
+---
 
-Insight
+## 2️⃣ Product Performance Analysis
 
-The United Kingdom dominates revenue, accounting for the vast majority of sales.
+Focuses on product-level insights.
 
-Orders by Country
-Country	Orders
-United Kingdom	21,823
+Includes:
 
-Insight
+- Revenue distribution by product category
+- Top products by units sold
+- Product revenue vs sales volume
+- Product sales summary table
+- Sales volume by product type
 
-The company’s core customer base is domestic, while international markets contribute smaller portions of revenue.
+---
 
-5. Customer Analysis
-Top Customers by Revenue
-CustomerID	Total Spending
-14646	£279,801
+## 3️⃣ Customer Performance Analysis
 
-Insight
+Analyzes customer purchasing behavior.
 
-A small number of customers generate very high revenue, which may indicate bulk buyers or business clients.
+Includes:
 
-Customer Purchase Frequency
-CustomerID	Orders
-14911	242 purchases
+- Customer revenue table
+- Top customers by revenue
+- Orders by country
+- Customers with highest order frequency
 
-Insight
+---
 
-Some customers demonstrate strong loyalty and repeat purchasing behavior.
+# 🛠 Tools Used
 
-6. Revenue by Product Type
-Product Type	Revenue
-Product	£9.79M
-Shipping	£272K
-Gift Voucher	£685
-Sample	-£3,049
+- PostgreSQL
+- SQL
+- Power BI
+- Data Modeling (Star Schema)
 
-Insight
+---
 
-Product sales account for over 97% of total revenue.
+# 📊 Key Insights
 
-Shipping contributes a smaller but notable portion.
+Key observations from the analysis:
 
-Gift vouchers represent a negligible share.
+- Revenue peaks during **November**, indicating seasonal demand.
+- A small number of products generate a **large portion of total revenue**.
+- The **United Kingdom dominates sales volume**.
+- A few customers contribute significantly to total revenue.
+- Product sales follow a **long-tail distribution** pattern.
 
-Samples show slightly negative revenue due to promotional giveaways.
+---
 
-Key Business Insights
+# 📂 Project Structure
 
-The business generated over £10M in revenue from more than 24K orders.
+```
+Retail_Analysis
+│
+├── Dataset
+│     └── online_retail.csv
+│
+├── SQL
+│     ├── data_cleaning.sql
+│     ├── data_modeling.sql
+│     └── analysis_queries.sql
+│
+├── PowerBI
+│     └── retail_sales_dashboard.pbix
+│
+├── Images
+│     ├── overview.png
+│     ├── product_insights.png
+│     └── customer_insights.png
+│
+└── README.md
+```
 
-Sales demonstrate strong seasonal patterns, with November being the peak month.
+---
 
-The UK market dominates both revenue and orders, indicating a primarily domestic business.
+# 🖼 Dashboard Preview
 
-A small number of products drive a large share of revenue.
+## Business Overview
+![Business Overview](Images/overview.png)
 
-High-volume products are not always the highest-revenue products.
+---
 
-Certain customers contribute disproportionately high revenue.
+## Product Performance Analysis
+![Product Insights](Images/product_insights.png)
 
-Product sales make up the vast majority of revenue compared to shipping and vouchers.
+---
 
-Next Phase
+## Customer Performance Analysis
+![Customer Insights](Images/customer_insights.png)
 
-The insights derived from SQL analysis will now be translated into a Power BI dashboard, including:
+---
 
-Executive overview KPIs
+# 👩‍💻 Author
 
-Sales trend visualizations
+**Jahnavi Rangasai Parimi**
 
-Product performance analysis
-
-Geographic distribution
-
-Customer insights
+Aspiring Data Analyst  
+SQL | Power BI | Data Analytics
