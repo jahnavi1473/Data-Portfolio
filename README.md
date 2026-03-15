@@ -73,9 +73,90 @@ Completed a structured analytics job simulation focused on business KPI reportin
 
 ---
 
+## 3️⃣ Online Retail Sales Analytics – SQL & Power BI  
+
+**Tools:** PostgreSQL | SQL | Power BI | Data Modeling (Star Schema)
+
+---
+
+### 📌 Project Overview  
+
+Built an end-to-end Business Intelligence solution analyzing **540K+ retail transactions** from an online retailer.  
+
+The project demonstrates the complete analytics workflow from **data cleaning and SQL transformation to dimensional modeling and dashboard development**.
+
+A **3-page Power BI dashboard** was developed to analyze overall business performance, product performance, and customer purchasing behavior.
+
+---
+
+### 🔍 Key Work Done  
+
+**Data Cleaning & Preparation (SQL)**  
+- Removed cancelled invoices (`InvoiceNo starting with 'C'`)
+- Filtered invalid transactions including negative quantities
+- Removed non-product stock codes (`B, D, M, C2, AMAZONFEE, BANK CHARGES, CRUK`)
+- Investigated and handled missing product descriptions
+- Standardized stock codes using `UPPER()` to ensure data consistency
+
+**Data Modeling**  
+- Designed a **Star Schema** data model
+- Created fact and dimension tables:
+  - `fact_sales`
+  - `dim_product`
+  - `dim_customer`
+  - `dim_country`
+  - `dim_date`
+- Built a **net revenue model** to support accurate sales analysis
+
+**Business Analysis (SQL)**  
+Performed analytical queries to answer key business questions:
+- Monthly revenue trends
+- Top-performing products
+- Country-level sales distribution
+- Customer revenue contribution
+- Customer order frequency
+
+**Dashboard Development (Power BI)**  
+Built an interactive **3-page dashboard** including:
+
+1️⃣ **Business Overview**
+- Total Revenue
+- Total Orders
+- Total Customers
+- Average Order Value
+- Monthly Revenue Trend
+- Revenue by Country
+- Top Products by Revenue
+
+2️⃣ **Product Performance Analysis**
+- Revenue contribution by product type
+- Top products by units sold
+- Product revenue vs sales volume analysis
+- Product sales summary
+
+3️⃣ **Customer Performance Analysis**
+- Customer revenue contribution
+- Top customers by revenue
+- Customer purchase frequency
+- Orders by country
+
+---
+
+### 📈 Business Insights  
+
+- Revenue peaks during **November**, indicating strong seasonal demand
+- A small number of products contribute a **large share of total revenue**
+- The **United Kingdom dominates total sales volume**
+- A few high-value customers generate a significant portion of total revenue
+- Product sales follow a **long-tail distribution pattern**
+
+📂 Folder: `Retail-Analysis`
+
+---
+
 ## 🛠 Technical Skills Demonstrated
 
-- **SQL:** Joins, Aggregations, CTEs, Window Functions  
+- **SQL:** Joins, Aggregations, CTEs, Window Functions, Data Cleaning, Data Modeling
 - **Python:** Pandas, NumPy  
 - **Power BI:** Data Modeling, DAX, KPI Reporting  
 - **Excel:** PivotTables, Power Query, VBA Automation  
