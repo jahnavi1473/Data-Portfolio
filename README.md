@@ -19,7 +19,7 @@ My work focuses on transforming raw data into meaningful business insights throu
 
 ---
 
-# 📁 Projects Included
+# 📁 Projects
 
 ---
 
