@@ -58,6 +58,7 @@ Performed transaction-level analysis on 500K+ retail sales records to clean raw 
 ---
 
 ## 2️⃣ PwC Switzerland – Power BI Job Simulation (Forage)  
+
 **Tools:** Power BI | Power Query | DAX  
 
 ### 📌 Project Overview
@@ -106,7 +107,6 @@ A **3-page Power BI dashboard** was developed to analyze overall business perfor
   - `dim_customer`
   - `dim_country`
   - `dim_date`
-- Built a **net revenue model** to support accurate sales analysis
 
 **Business Analysis (SQL)**  
 Performed analytical queries to answer key business questions:
@@ -119,38 +119,79 @@ Performed analytical queries to answer key business questions:
 **Dashboard Development (Power BI)**  
 Built an interactive **3-page dashboard** including:
 
-1️⃣ **Business Overview**
-- Total Revenue
-- Total Orders
-- Total Customers
-- Average Order Value
-- Monthly Revenue Trend
-- Revenue by Country
-- Top Products by Revenue
-
-2️⃣ **Product Performance Analysis**
-- Revenue contribution by product type
-- Top products by units sold
-- Product revenue vs sales volume analysis
-- Product sales summary
-
-3️⃣ **Customer Performance Analysis**
-- Customer revenue contribution
-- Top customers by revenue
-- Customer purchase frequency
-- Orders by country
+1️⃣ Business Overview  
+2️⃣ Product Performance Analysis  
+3️⃣ Customer Performance Analysis  
 
 ---
 
 ### 📈 Business Insights  
 
-- Revenue peaks during **November**, indicating strong seasonal demand
-- A small number of products contribute a **large share of total revenue**
-- The **United Kingdom dominates total sales volume**
-- A few high-value customers generate a significant portion of total revenue
+- Revenue peaks during **November**, indicating strong seasonal demand  
+- A small number of products contribute a **large share of total revenue**  
+- The **United Kingdom dominates total sales volume**  
+- A few high-value customers generate a significant portion of total revenue  
 - Product sales follow a **long-tail distribution pattern**
 
 📂 Folder: `Retail-Analysis`
+
+---
+
+## 4️⃣ Healthcare Claims Data Warehouse & SQL Analytics  
+
+**Tools:** MySQL | SQL | Data Cleaning | Dimensional Modeling | Data Warehousing  
+
+---
+
+### 📌 Project Overview  
+
+Developed a **healthcare claims analytics pipeline** to analyze patient utilization patterns, provider costs, and potential fraud indicators using SQL-based data warehousing techniques.
+
+The project demonstrates how raw healthcare datasets can be transformed into **structured analytical models for healthcare cost and utilization analysis**.
+
+---
+
+### 🔍 Key Work Done  
+
+**Data Cleaning & Transformation**
+
+- Processed **558K+ healthcare claim records**
+- Handled missing values and inconsistent data formats
+- Cleaned categorical fraud indicators
+- Standardized numeric and date fields
+- Created staging tables for structured data transformations
+
+**Data Modeling**
+
+Designed a **Star Schema data warehouse** including:
+
+- `dim_beneficiary` (patient demographics and chronic conditions)
+- `dim_provider` (healthcare providers with fraud flags)
+- `dim_date` (date attributes)
+- `fact_inpatient_claims`
+- `fact_outpatient_claims`
+
+**SQL Analytics**
+
+Performed analytical queries to evaluate:
+
+- Healthcare spending trends
+- Provider cost concentration
+- Patient claim utilization
+- Chronic disease prevalence
+- Fraud indicators across healthcare providers
+
+---
+
+### 📈 Key Insights  
+
+- Analyzed **558K+ healthcare claims** across **138K patients** and **5.4K providers**
+- Identified **$556M total healthcare expenditure**
+- Average **inpatient claim cost (~$10K)** significantly exceeds **outpatient claims (~$286)**
+- Outpatient services represent **over 90% of total claims**
+- **506 providers flagged for potential fraud risk**
+
+📂 Folder: `healthcare-claims-analytics`
 
 ---
 
@@ -161,6 +202,7 @@ Built an interactive **3-page dashboard** including:
 - **Power BI:** Data Modeling, DAX, KPI Reporting  
 - **Excel:** PivotTables, Power Query, VBA Automation  
 - **Data Cleaning & Validation**
+- **Dimensional Modeling & Star Schema Design**
 - **Business Insight & Dashboard Reporting**
 
 ---
@@ -168,8 +210,10 @@ Built an interactive **3-page dashboard** including:
 ## 🎯 What This Portfolio Demonstrates
 
 - End-to-end analytics workflow
+- Data warehouse modeling
 - Business KPI development
 - Customer & revenue analysis
+- Healthcare claims analytics
 - Data-driven decision-making support
 - Structured and scalable reporting models
 
