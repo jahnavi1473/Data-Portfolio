@@ -210,6 +210,12 @@ These labels can be used for future fraud detection analytics.
 ```
 healthcare-claims-analytics
 │
+├── data
+│   ├── beneficiary.csv
+│   ├── inpatient_claims.csv
+│   ├── outpatient_claims.csv
+│   └── fraud_labels.csv
+│  
 ├── sql
 │   ├── source_layer.sql
 │   ├── staging_layer.sql
