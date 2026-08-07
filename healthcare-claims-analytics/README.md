@@ -1,207 +1,93 @@
-# Healthcare Claims Data Warehouse & SQL Analytics
+# Healthcare Claims Analytics & Data Warehouse
 
-## Project Overview
+## 🏥 Project Overview
+This project transforms raw, messy healthcare claims data into a structured **Data Warehouse** to uncover critical business insights. The goal was to analyze **558,000+ claims** across **138,000+ patients** to identify cost drivers, utilization patterns, and potential fraud indicators.
 
-This project analyzes healthcare insurance claims to understand patient utilization patterns, provider cost distribution, and potential fraud indicators.
-
-The objective was to transform raw healthcare claim datasets into a structured analytical data warehouse using SQL and perform analytical queries to generate business insights.
-
-Project workflow:
-
-Raw Data → Data Cleaning → Staging Layer → Dimensional Modeling → SQL Analysis
-
----
-
-## Dataset
-
-The dataset contains healthcare insurance claim records commonly used for healthcare analytics and fraud detection research.
-
-### Dataset Size
-
-| Dataset | Records |
-|--------|--------|
-| Beneficiary Data | 138,556 |
-| Inpatient Claims | 40,474 |
-| Outpatient Claims | 517,737 |
-| Fraud Labels | 5,410 |
-
-Total claim records analyzed: **558K+**
-
-### Key Entities
-
-- Beneficiaries – patient demographic information and chronic conditions  
-- Providers – hospitals and healthcare institutions  
-- Claims – inpatient and outpatient medical claim records  
-- Fraud Labels – indicators for potentially fraudulent providers  
+**Key Business Outcomes:**
+- 💰 Identified **$556M+** in total healthcare expenditure.
+- 🚨 Flagged **506 providers** for potential fraud.
+- 📉 Discovered that while outpatient claims are frequent (90%), **inpatient claims drive the majority of costs**.
+- 🩺 Highlighted **Ischemic Heart Disease** and **Diabetes** as the top chronic conditions driving patient utilization.
 
 ---
 
-## Tech Stack
-
-**Database & Querying**
-
-- MySQL
-- SQL
-
-**Data Processing**
-
-- Data Cleaning
-- Data Transformation
-- Data Validation
-
-**Analytics Concepts**
-
-- Dimensional Data Modeling
-- Star Schema Design
-- Data Warehousing
-- Analytical SQL Queries
+## 🚀 The Problem & Solution
+| The Problem | The Solution |
+| :--- | :--- |
+| Raw data was scattered across CSVs with missing values, inconsistent formats, and no clear structure. | Built a **Star Schema Data Warehouse** in MySQL to centralize data, enforce data quality, and enable fast analytical queries. |
+| Leadership lacked visibility into cost distribution and fraud risks. | Developed **Advanced SQL queries** to answer critical business questions about spending, provider performance, and patient health trends. |
 
 ---
 
-## Data Pipeline
+## 🛠 Tech Stack
+- **Database:** MySQL
+- **Data Modeling:** Star Schema, Dimensional Modeling (Fact & Dimension Tables)
+- **Languages:** SQL (Joins, CTEs, Window Functions, Aggregations)
+- **Tools:** Data Cleaning, ETL Pipelines, Exploratory Data Analysis (EDA)
 
+---
+
+## 🏗️ Data Architecture & Pipeline
+The project follows a robust **Data Warehousing** workflow:
+
+```mermaid
+graph LR
+    A[Raw CSV Data] --> B[Source Layer]
+    B --> C[Data Cleaning & Validation]
+    C --> D[Staging Layer]
+    D --> E[Dimensional Modeling (Star Schema)]
+    E --> F[Business Analysis & Insights]
 ```
-Raw Dataset
-   ↓
-Source Tables (MySQL)
-   ↓
-Data Cleaning & Transformation
-   ↓
-Staging Tables
-   ↓
-Dimensional Data Model (Star Schema)
-   ↓
-SQL Business Analysis
-```
+---
+
+## 🏗️ Schema Design
+A **Star Schema** was implemented to optimize query performance:
+
+**Fact Tables:**
+- `fact_inpatient_claims`: Hospital admissions, costs, diagnosis codes.
+- `fact_outpatient_claims`: Outpatient visits, costs, physician interactions.
+
+**Dimension Tables:**
+- `dim_beneficiary`: Patient demographics, chronic conditions.
+- `dim_provider`: Provider details, fraud flags.
+- `dim_date`: Time-based analysis attributes.
 
 ---
 
-## Data Cleaning & Transformation
+## ❓ Business Questions & Answers
+This project answers the following critical business questions using SQL:
 
-Several preprocessing steps were performed on the raw dataset:
+### 1. What is the total financial exposure?
+> **Answer:** Total healthcare expenditure across all claims is **$556,000,000+**.
 
-- Handling missing values and null records
-- Cleaning categorical values such as fraud labels
-- Standardizing date and numeric fields
-- Removing CSV formatting artifacts
-- Creating staging tables to isolate transformation logic
+### 2. How do Inpatient vs. Outpatient costs compare?
+> **Answer:** 
+> - **Outpatient:** 517,737 claims (92.8% of volume) but lower average cost (**$286**).
+> - **Inpatient:** 40,474 claims (7.2% of volume) but significantly higher cost (**$10,087** average).
+> - **Insight:** Inpatient care is the primary cost driver despite lower volume.
 
-These steps ensured the dataset was consistent and analysis-ready.
+### 3. Which providers are the highest cost contributors?
+> **Answer:** A small subset of providers accounts for a disproportionate amount of spending. The top providers exceed **$5M** in reimbursements, indicating potential cost concentration.
 
----
+### 4. What are the most common chronic conditions?
+> **Answer:** 
+> - **Ischemic Heart Disease:** 93,000 patients.
+> - **Diabetes:** 83,000 patients.
+> - **Insight:** These two conditions drive the majority of repeated utilization.
 
-## Data Warehouse Design
-
-A **star schema data model** was created to support efficient analytical queries.
-
-### Dimension Tables
-
-**dim_beneficiary**
-
-- Patient demographics
-- Chronic conditions
-- Insurance coverage metrics
-
-**dim_provider**
-
-- Healthcare provider identifiers
-- Fraud indicator flag
-
-**dim_date**
-
-- Claim date attributes used for time-based analysis
-
-### Fact Tables
-
-**fact_inpatient_claims**
-
-- Hospital admissions
-- Claim cost
-- Diagnosis and procedure codes
-
-**fact_outpatient_claims**
-
-- Outpatient visits
-- Claim cost
-- Physician interactions
+### 5. Are there signs of fraud?
+> **Answer:** Yes. **506 providers** (approx. 9% of total providers) are flagged with potential fraud indicators, warranting further investigation.
 
 ---
 
-## Key Analytical Questions
+## 📊 Key Insights 
 
-The project explores several analytical questions:
-
-- What is the total healthcare expenditure across claims?
-- How do inpatient and outpatient claims differ in cost and volume?
-- Which providers generate the highest healthcare costs?
-- How frequently do patients utilize healthcare services?
-- What are the most common chronic health conditions?
-- Which providers are flagged for potential fraud risk?
-
----
-
-## SQL Analysis & Insights
-
-### Healthcare Overview
-
-- Total Patients: **138,556**
-- Total Providers: **5,410**
-- Total Claims: **558K+**
-- Total Healthcare Expenditure: **$556M**
-
----
-
-### Claim Utilization
-
-| Claim Type | Total Claims |
-|------------|-------------|
-| Inpatient | 40,474 |
-| Outpatient | 517,737 |
-
-Outpatient services account for **over 90% of total healthcare interactions**, while inpatient claims represent a smaller but more expensive segment.
-
----
-
-### Cost Analysis
-
-| Metric | Value |
-|------|------|
-Average Inpatient Claim Cost | $10,087 |
-Average Outpatient Claim Cost | $286 |
-
-Although outpatient claims are more frequent, inpatient claims contribute the majority of healthcare spending.
-
----
-
-### Provider Cost Concentration
-
-A small group of providers contributes significantly to overall healthcare costs.
-
-Top providers exceed **$5M in inpatient claim reimbursements**, indicating potential cost concentration.
-
----
-
-### Chronic Disease Prevalence
-
-Two major chronic conditions dominate the dataset:
-
-- Ischemic Heart Disease: **93K patients**
-- Diabetes: **83K patients**
-
-These conditions contribute significantly to repeated healthcare utilization.
-
----
-
-### Fraud Indicators
-
-The dataset contains fraud labels for healthcare providers.
-
-| Fraud Indicator | Providers |
-|---------------|-----------|
-| Non-Fraud | 4,904 |
-| Potential Fraud | 506 |
-
-These labels can be used for future fraud detection analytics.
+| Metric | Value | Insight |
+| :--- | :--- | :--- |
+| **Total Expenditure** | $556M+ | Massive financial scale requiring strict cost control. |
+| **Inpatient Avg Cost** | $10,087 | ~35x higher than outpatient costs. |
+| **Fraud Risk** | 506 Providers | High-priority targets for audit. |
+| **Top Chronic Disease** | Ischemic Heart Disease | 93K patients require targeted care management. |
 
 ---
 
@@ -227,36 +113,14 @@ healthcare-claims-analytics
 
 ---
 
-## Future Scope
-
-The project can be extended with additional analytics capabilities.
-
-### BI Dashboard Development
-
-Interactive dashboards can be built using:
-
-- Tableau
-- Power BI
-
-Possible visualizations include:
-
-- Claim volume trends
-- Provider cost distribution
-- Fraud risk indicators
-- Patient utilization patterns
-
-### Machine Learning Fraud Detection
-
-The structured dataset can be used to train models such as:
-
-- Logistic Regression
-- Random Forest
-- Gradient Boosting
-
-to predict fraudulent healthcare providers.
+## 🚀 Future Scope
+- **BI Dashboard Integration:** Connect this warehouse to **Power BI** or **Tableau** for real-time executive dashboards.
+- **Predictive Modeling:** Use the structured fraud labels to train a **Machine Learning model** (e.g., Random Forest) for automated fraud detection.
+- **Patient Risk Scoring:** Develop a scoring system to identify high-risk patients based on chronic conditions and utilization history.
 
 ---
 
-## Author
-
-**Jahnavi Rangasai Parimi**
+## 👨‍💻 Author
+**Jahnavi Rangasai Parimi**  
+*Data Analyst | BI & Reporting*  
+[(LinkedIn Profile)](https://linkedin.com/in/jahnavi-rangasai-parimi-b21364251/) | [(GitHub Profile)](https://github.com/jahnavi1473/Data-Portfolio)
