@@ -97,18 +97,21 @@ The final Power BI solution consists of **3 interactive pages**:
 ---
 
 ## 🖼 Dashboard Preview
-*(Note: Replace the image placeholders below with your actual dashboard screenshots)*
+
 
 **Business Overview Page**
 ![Business Overview](Images/overview.png)
+
 *High-level KPIs and monthly trends.*
 
 **Product Performance Page**
 ![Product Insights](Images/product_insights.png)
+
 *Product revenue distribution and top sellers.*
 
 **Customer Performance Page**
 ![Customer Insights](Images/customer_insights.png)
+
 *Top customers and order frequency analysis.*
 
 ---
@@ -148,5 +151,5 @@ Retail_Analysis
 
 ## 👩‍💻 Author
 **Jahnavi Rangasai Parimi**  
-*Data Analyst | SQL & Power BI Specialist*  
+*Data Analyst | BI & Reporting*  
 [LinkedIn Profile](https://linkedin.com/in/jahnavi-rangasai-parimi-b21364251/) | [GitHub Profile](https://github.com/jahnavi1473/Data-Portfolio)
