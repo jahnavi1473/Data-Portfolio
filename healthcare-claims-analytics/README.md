@@ -35,7 +35,7 @@ graph LR
     A[Raw CSV Data] --> B[Source Layer]
     B --> C[Data Cleaning & Validation]
     C --> D[Staging Layer]
-    D --> E[Dimensional Modeling (Star Schema)]
+    D --> E[Dimensional Modeling - Star Schema]
     E --> F[Business Analysis & Insights]
 ```
 
