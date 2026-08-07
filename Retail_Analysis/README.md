@@ -1,198 +1,119 @@
-# Retail Sales Analytics Dashboard
+# Retail Sales Analytics & Power BI Dashboard
 
 ## 📊 Project Overview
+This project analyzes **541,000+ retail transactions** to uncover critical insights about sales performance, product trends, and customer behavior. The goal was to transform raw transactional data into a structured **Data Warehouse** and build an interactive **Power BI Dashboard** to drive business decisions.
 
-This project analyzes retail transaction data to uncover insights about **sales performance, product trends, and customer behavior**.
-
-The analysis was conducted using:
-
-- **SQL (PostgreSQL)** for data cleaning and transformation  
-- **Power BI** for interactive dashboard visualization  
-
-The final result is a **3-page Business Intelligence dashboard** that helps understand:
-
-- Overall business performance
-- Product performance
-- Customer purchasing behavior
+**Key Business Outcomes:**
+- 💰 Identified **£10M+** in total revenue across multiple regions.
+- 🇬🇧 Discovered that the **UK contributes ~85%** of total revenue, highlighting a heavy regional concentration.
+- 📈 Pinpointed **November** as the peak revenue month (likely due to holiday sales), reaching **£1.47M** in a single month.
+- 🏷️ Identified that a small subset of products drives the majority of revenue (Pareto Principle).
 
 ---
 
-# 📁 Dataset
-
-The dataset used is the **Online Retail Dataset**, which contains transactional data from a UK-based online retailer.
-
-### Key Attributes
-
-- Invoice Number
-- Stock Code
-- Product Description
-- Quantity
-- Invoice Date
-- Unit Price
-- Customer ID
-- Country
-
-Total records analyzed: **~540,000 transactions**
+## 🚀 The Problem & Solution
+| The Problem | The Solution |
+| :--- | :--- |
+| Raw data contained cancellations, missing customer IDs, and inconsistent stock codes, making analysis unreliable. | Performed rigorous **SQL Data Cleaning** (PostgreSQL) to remove invalid records and standardize data formats. |
+| Leadership lacked a unified view of sales performance across products and regions. | Built a **Star Schema Data Model** and an interactive **3-page Power BI Dashboard** for real-time insights. |
 
 ---
 
-# 🧹 Data Cleaning (SQL)
-
-Data preparation was performed using **PostgreSQL**.
-
-Key cleaning steps:
-
-- Removed cancelled orders (`InvoiceNo starting with 'C'`)
-- Removed non-product stock codes  
-  (`B, D, M, C2, AMAZONFEE, BANK CHARGES, CRUK`)
-- Removed invalid transactions with **negative quantities**
-- Investigated and handled **missing product descriptions**
-- Standardized Stock Codes using `UPPER()`
-- Created a **net revenue model** for valid transactions
+## 🛠 Tech Stack
+- **Database:** PostgreSQL
+- **Visualization:** Power BI (DAX, Data Modeling, Interactive Dashboards)
+- **Languages:** SQL (Joins, CTEs, Aggregations, Window Functions)
+- **Tools:** Data Cleaning, ETL, Star Schema Design
 
 ---
 
-# ⭐ Data Modeling
+## 🧹 Data Cleaning & Preparation (SQL)
+Data was cleaned and transformed in PostgreSQL to ensure accuracy:
 
-A **Star Schema** was implemented to structure the data.
-
-## Fact Table
-
-**fact_sales**
-
-Contains transactional metrics:
-
-- InvoiceNo
-- StockCode
-- CustomerID
-- Order Date
-- Quantity
-- Unit Price
-- Revenue
+- **Removed Cancellations:** Filtered out orders with InvoiceNo starting with 'C'.
+- **Filtered Invalid Records:** Excluded non-product stock codes (e.g., `B`, `D`, `M`, `AMAZONFEE`, `BANK CHARGES`).
+- **Handled Missing Data:** Labeled transactions with missing Customer IDs as **"Unknown Customer"** to preserve revenue data.
+- **Standardized Formats:** Converted Stock Codes to `UPPER()` and calculated **Net Revenue** (`Quantity * Unit Price`).
 
 ---
 
-## Dimension Tables
+## 🏗️ Data Modeling (Star Schema)
+A **Star Schema** was implemented to optimize query performance and DAX calculations:
 
-### dim_product
-- StockCode
-- Product Name
-- Product Type
+**Fact Table:**
+- `fact_sales`: Transactional metrics (InvoiceNo, StockCode, CustomerID, Date, Quantity, Unit Price, Revenue).
 
-### dim_customer
-- CustomerID
-- Country
-
-### dim_date
-- Order Date
-- Day
-- Month
-- Year
-
-### dim_country
-- Country
+**Dimension Tables:**
+- `dim_product`: StockCode, Product Name, Product Type.
+- `dim_customer`: CustomerID, Country.
+- `dim_date`: Order Date, Day, Month, Year.
+- `dim_country`: Country details.
 
 ---
 
-# ⚠ Data Quality Handling
+## ❓ Business Questions & Answers
+This project answers critical business questions using SQL and Power BI:
 
-Some transactions contained **missing Customer IDs**.
+### 1. What is the total revenue and which region dominates?
+> **Answer:** Total revenue is **£10M+**. The **United Kingdom** accounts for **~85%** of total sales, indicating a heavy reliance on a single market.
 
-Instead of removing these records, they were labeled as:
+### 2. When are sales highest?
+> **Answer:** Revenue peaks in **November**, reaching **£1.47M** (likely due to holiday shopping). This is the optimal time for inventory and marketing focus.
 
-```
-Unknown Customer
-```
+### 3. Which products drive the most revenue?
+> **Answer:** A small number of products generate the majority of revenue (Long-Tail Distribution). Top products by volume and revenue were identified for inventory optimization.
 
-This ensures **revenue data is preserved** while maintaining analytical clarity.
+### 4. Who are the top customers?
+> **Answer:** A select group of customers contributes significantly to total revenue. Top customers by revenue and order frequency were identified for loyalty programs.
 
----
-
-# 🔎 Business Analysis (SQL)
-
-Key business questions explored:
-
-- Monthly revenue trends
-- Top performing products by revenue
-- Sales distribution by country
-- Product category contribution
-- Customer revenue contribution
-- Customer order frequency
+### 5. How does customer behavior vary by country?
+> **Answer:** Sales distribution varies significantly by country, with the UK showing the highest volume and average order value.
 
 ---
 
-# 📈 Dashboard Overview
+## 📊 Key Insights & Dashboard Overview
 
-The Power BI dashboard consists of **three analytical pages**.
+The final Power BI solution consists of **3 interactive pages**:
 
----
+### 1️⃣ Business Overview
+- **Metrics:** Total Revenue, Total Orders, Total Customers, Average Order Value (AOV).
+- **Trends:** Monthly revenue trends and geographic distribution.
 
-## 1️⃣ Business Overview
+### 2️⃣ Product Performance
+- **Metrics:** Revenue by product category, units sold, and product profitability.
+- **Insight:** Identification of "Star" products vs. "Dog" products.
 
-Provides a high-level snapshot of company performance.
+### 3️⃣ Customer Performance
+- **Metrics:** Top customers by revenue, order frequency, and customer lifetime value.
+- **Insight:** Segmentation of high-value vs. low-value customers.
 
-Includes:
-
-- Total Revenue
-- Total Orders
-- Total Customers
-- Average Order Value
-- Total Units Sold
-- Monthly Revenue Trend
-- Top Products by Revenue
-- Revenue by Country
-
----
-
-## 2️⃣ Product Performance Analysis
-
-Focuses on product-level insights.
-
-Includes:
-
-- Revenue distribution by product category
-- Top products by units sold
-- Product revenue vs sales volume
-- Product sales summary table
-- Sales volume by product type
+| Metric | Value | Insight |
+| :--- | :--- | :--- |
+| **Total Revenue** | £10M+ | Massive scale with room for international expansion. |
+| **Peak Month** | November | £1.47M revenue; critical for stock planning. |
+| **Top Market** | UK | 85% of revenue; high concentration risk/opportunity. |
+| **Missing Customers** | Labeled "Unknown" | Preserved data integrity without losing revenue context. |
 
 ---
 
-## 3️⃣ Customer Performance Analysis
+## 🖼 Dashboard Preview
+*(Note: Replace the image placeholders below with your actual dashboard screenshots)*
 
-Analyzes customer purchasing behavior.
+**Business Overview Page**
+![Business Overview](Images/overview.png)
+*High-level KPIs and monthly trends.*
 
-Includes:
+**Product Performance Page**
+![Product Insights](Images/product_insights.png)
+*Product revenue distribution and top sellers.*
 
-- Customer revenue table
-- Top customers by revenue
-- Orders by country
-- Customers with highest order frequency
-
----
-
-# 🛠 Tools Used
-
-- PostgreSQL
-- SQL
-- Power BI
-- Data Modeling (Star Schema)
+**Customer Performance Page**
+![Customer Insights](Images/customer_insights.png)
+*Top customers and order frequency analysis.*
 
 ---
 
-# 📊 Key Insights
-
-Key observations from the analysis:
-
-- Revenue peaks during **November**, indicating seasonal demand.
-- A small number of products generate a **large portion of total revenue**.
-- The **United Kingdom dominates sales volume**.
-- A few customers contribute significantly to total revenue.
-- Product sales follow a **long-tail distribution** pattern.
-
----
-
-# 📂 Project Structure
+## 📂 Project Structure
 
 ```
 Retail_Analysis
@@ -218,26 +139,14 @@ Retail_Analysis
 
 ---
 
-# 🖼 Dashboard Preview
-
-## Business Overview
-![Business Overview](Images/overview.png)
-
----
-
-## Product Performance Analysis
-![Product Insights](Images/product_insights.png)
+## 🚀 Future Scope
+- **Predictive Sales Forecasting:** Use historical data to predict next month's revenue using Time Series analysis.
+- **Customer Segmentation:** Apply RFM (Recency, Frequency, Monetary) analysis to segment customers for targeted marketing.
+- **Real-Time Dashboard:** Connect Power BI to a live database for real-time sales monitoring.
 
 ---
 
-## Customer Performance Analysis
-![Customer Insights](Images/customer_insights.png)
-
----
-
-# 👩‍💻 Author
-
-**Jahnavi Rangasai Parimi**
-
-Aspiring Data Analyst  
-SQL | Power BI | Data Analytics
+## 👩‍💻 Author
+**Jahnavi Rangasai Parimi**  
+*Data Analyst | SQL & Power BI Specialist*  
+[LinkedIn Profile](https://linkedin.com/in/jahnavi-rangasai-parimi-b21364251/) | [GitHub Profile](https://github.com/jahnavi1473/Data-Portfolio)
