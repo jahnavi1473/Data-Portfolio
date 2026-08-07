@@ -38,6 +38,7 @@ graph LR
     D --> E[Dimensional Modeling (Star Schema)]
     E --> F[Business Analysis & Insights]
 ```
+
 ---
 
 ## 🏗️ Schema Design
