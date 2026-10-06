@@ -320,19 +320,19 @@ The dashboard explicitly separates **identified customers from Unknown Customers
 
 ## Business Overview
 
-![Business Overview](Images/overview.png)
+![Business Overview](Images/01_overview.png)
 
 *High-level KPIs, monthly revenue trends, top products, and geographic revenue distribution.*
 
 ## Product Performance
 
-![Product Insights](Images/product_insights.png)
+![Product Insights](Images/02_product_insights.png)
 
 *Product revenue contribution, sales volume, and product-level performance.*
 
 ## Customer Performance
 
-![Customer Insights](Images/customer_insights.png)
+![Customer Insights](Images/03_customer_insights.png)
 
 *Customer revenue contribution, top customers, order frequency, and geographic order distribution.*
 
