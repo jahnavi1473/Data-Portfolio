@@ -1,137 +1,127 @@
-# 📊 PwC Switzerland – Power BI Job Simulation  
-**Virtual Internship (Forage) | Completed October 2023**
+# PwC Switzerland – Power BI Business Intelligence Simulation
+
+## 🏢 Project Overview
+This project simulates a real-world consulting engagement with **PwC Switzerland**, focusing on transforming raw operational and workforce data into actionable strategic insights. The goal was to build three distinct **Power BI dashboards** addressing critical business challenges: **Call Centre Efficiency**, **Customer Churn & Revenue**, and **Diversity & Inclusion**.
+
+**Key Business Outcomes:**
+- 📞 **Operational Efficiency:** Analyzed call centre trends to identify bottlenecks in service delivery and agent performance.
+- 📉 **Revenue Retention:** Uncovered patterns in customer churn and service usage to inform retention strategies.
+- 👥 **Workforce Equity:** Evaluated diversity metrics across job levels and promotions to support inclusive hiring goals.
 
 ---
 
-## 📌 Overview
-
-This repository contains my work completed as part of the PwC Switzerland Power BI Job Simulation hosted on Forage.
-
-The simulation focused on solving real-world business scenarios using Power BI, covering:
-
-- Operational performance analytics  
-- Customer churn & revenue analysis  
-- Diversity & inclusion workforce analytics  
-
-All dashboards were built using Power BI with data modeling, DAX measures, and interactive visualizations.
+## 🚀 The Problem & Solution
+| The Business Challenge | The Analytical Solution |
+| :--- | :--- |
+| **Call Centre Bottlenecks:** Lack of visibility into abandonment rates and agent performance impacting customer satisfaction. | Built an **Interactive Call Centre Dashboard** tracking ASA, abandonment rates, and satisfaction by topic to optimize staffing. |
+| **High Customer Churn:** Unclear drivers of customer attrition and revenue loss across different service tiers. | Developed a **Churn & Revenue Model** using DAX to segment customers by demographics, payment method, and contract type. |
+| **Diversity Gaps:** Inability to track progress on gender representation and promotion equity across the organization. | Created a **Diversity & Inclusion Dashboard** visualizing hiring trends, executive representation, and performance ratings by gender. |
 
 ---
 
-## 🗂 Repository Structure
-dataset/ → Raw datasets used for analysis
-
-powerbi/ → Power BI (.pbix) dashboard files
-
-screenshots/ → Dashboard preview images
-
-insights/ → Task-wise business insights documentation
-
-README.md → Project overview
+## 🛠 Tech Stack
+- **Visualization:** Power BI (Desktop & Service)
+- **Data Modeling:** Star Schema, Relational Modeling, Data Transformation (Power Query)
+- **Languages:** DAX (Measures, Calculated Columns, Time Intelligence)
+- **Skills:** KPI Design, Executive Reporting, Customer Analytics, HR Analytics
 
 ---
 
-# 📈 Task 1 – Call Centre Trends Analysis
+## 📊 Task Breakdown & Insights
 
-### 🎯 Objective
-Analyze call centre performance to understand service efficiency, agent performance, and customer satisfaction trends.
+### 1️⃣ Task 1: Call Centre Trends Analysis
+**Objective:** Optimize call centre operations and improve customer satisfaction scores.
 
-### 🔍 Key Areas Covered
-- Total Calls & Abandonment Rate  
-- Average Speed of Answer (ASA)  
-- Satisfaction by Topic  
-- Agent Performance Comparison  
+**Key Metrics Analyzed:**
+- Total Calls & Abandonment Rate
+- Average Speed of Answer (ASA)
+- Customer Satisfaction by Topic
+- Agent Performance Benchmarks
 
-### 📊 Dashboard Preview
+**🔍 Key Insights:**
+- Identified peak call times correlating with high abandonment rates.
+- Discovered specific topics with lower satisfaction scores, indicating training gaps.
+- **Impact:** Recommendations for dynamic staffing and targeted agent coaching.
+
 ![Call Centre Dashboard](screenshots/task1-call-centre.png)
-
-📄 Detailed Insights:  
-[View Task 1 Insights](insights/business-insights-task-1.md)
+*[View Detailed Insights](insights/business-insights-task-1.md)*
 
 ---
 
-# 📉 Task 2 – Customer Churn & Revenue Analysis
+### 2️⃣ Task 2: Customer Churn & Revenue Analysis
+**Objective:** Understand customer behavior to reduce churn and maximize revenue.
 
-### 🎯 Objective
-Analyze customer demographics, service usage, and revenue distribution to understand churn-related patterns.
+**Key Metrics Analyzed:**
+- Customer Demographics (Age, Gender, Dependents)
+- Payment Methods & Contract Types
+- Service-Level Revenue (Internet, Streaming, Tech Support)
+- Paperless Billing Impact
 
-### 🔍 Key Areas Covered
-- Customer Demographics (Age, Gender, Dependents, Partners)  
-- Payment Method Distribution  
-- Service-Level Revenue (Internet, Streaming, Phone, Tech Support)  
-- Paperless Billing & Contract Insights  
+**🔍 Key Insights:**
+- Identified high-risk customer segments based on contract type and payment method.
+- Revealed that **monthly contracts** had significantly higher churn than **2-year contracts**.
+- **Impact:** Data-driven recommendations for retention offers and contract restructuring.
 
-### 📊 Dashboard Preview
 ![Customer Churn Dashboard](screenshots/task2-customer-retention-2.1.png)
 ![Customer Churn Dashboard](screenshots/task2-customer-retention-2.2.png)
-
-📄 Detailed Insights:  
-[View Task 2 Insights](insights/business-insights-task-2.md)
+*[View Detailed Insights](insights/business-insights-task-2.md)*
 
 ---
 
-# 👥 Task 3 – Diversity & Inclusion Analytics
+### 3️⃣ Task 3: Diversity & Inclusion Analytics
+**Objective:** Measure progress on diversity goals and identify representation gaps.
 
-### 🎯 Objective
-Evaluate workforce diversity across gender, job levels, promotions, turnover, and executive representation.
+**Key Metrics Analyzed:**
+- Gender Distribution by Job Level & Department
+- Hiring & Promotion Trends (FY20 vs FY21)
+- Executive Representation
+- Performance Ratings by Gender
 
-### 🔍 Key Areas Covered
-- Gender Distribution by Job Level  
-- Hiring & Promotion Trends  
-- Executive Representation (FY20 vs FY21)  
-- Performance Ratings by Gender  
-- Age Group Distribution  
+**🔍 Key Insights:**
+- Highlighted a "leaky pipeline" where female representation drops significantly at senior levels.
+- Identified disparities in promotion rates between genders.
+- **Impact:** Strategic roadmap for inclusive leadership development and hiring practices.
 
-### 📊 Dashboard Preview
-![Diversity & Inclusion Dashboard](screenshots/task3-diversity-&-inclusion-dashboard-3.1.png)
-![Diversity & Inclusion Dashboard](screenshots/task3-diversity-&-inclusion-dashboard-3.2.png)
-![Diversity & Inclusion Dashboard](screenshots/task3-diversity-&-inclusion-dashboard-3.3.png)
-
-📄 **Detailed Insights:**  
-[View Task 3 Insights](insights/business-insights-task-3.md)
-
----
-
-# 🛠 Tools & Skills Demonstrated
-
-- Power BI (Dashboard Development)  
-- Data Modeling (Relational Model Design)  
-- DAX Measures & Calculations  
-- Data Transformation using Power Query  
-- KPI Design & Business Metrics Tracking  
-- Analytical Insight Documentation  
-- Executive-Level Reporting  
+![Diversity Dashboard](screenshots/task3-diversity-&-inclusion-dashboard-3.1.png)
+![Diversity Dashboard](screenshots/task3-diversity-&-inclusion-dashboard-3.2.png)
+![Diversity Dashboard](screenshots/task3-diversity-&-inclusion-dashboard-3.3.png)
+*[View Detailed Insights](insights/business-insights-task-3.md)*
 
 ---
 
-# 📊 Dashboard Capabilities
+## 📂 Project Structure
 
-- Interactive filters (Job Level, Departments, Tenure, Churn Status)  
-- Multi-page analytical reporting  
-- KPI cards & trend visualizations  
-- Comparative gender & performance analysis  
-- Revenue breakdown by services  
-
----
-
-# 🎯 Competencies Demonstrated
-
-- Business Intelligence Reporting  
-- Customer Analytics  
-- HR Analytics  
-- Operational Performance Analysis  
-- Data-Driven Insight Communication  
+```
+pwc-power-bi-simulation/
+│
+├── dataset/ # Raw source data files
+├── powerbi/ # .pbix dashboard files
+├── screenshots/ # Dashboard preview images
+├── insights/ # Detailed business insight documents
+└── README.md # Project overview
+```
 
 ---
 
-## 🏁 Summary
-
-This project demonstrates the ability to:
-
-- Translate business requirements into analytical dashboards  
-- Build structured, interactive BI reports  
-- Derive meaningful insights from operational and workforce data  
-- Present findings in a clear, executive-ready format  
+## 🎯 Competencies Demonstrated
+- **Business Intelligence:** Translating vague business requirements into structured data models.
+- **Data Storytelling:** Using visualizations to tell a compelling story about operational health and workforce equity.
+- **Advanced DAX:** Creating complex measures for YoY growth, churn rates, and running totals.
+- **Executive Communication:** Presenting findings in a format suitable for C-level stakeholders.
 
 ---
 
-📌 *This project was completed as part of the PwC Switzerland Virtual Job Simulation program on Forage.*
+## 🚀 Future Scope
+- **Predictive Churn Modeling:** Integrate Python/R scripts to predict future churn probability.
+- **Real-Time Monitoring:** Connect dashboards to live operational databases for real-time call centre monitoring.
+- **Automated Reporting:** Set up Power BI Dataflows for automated daily/weekly insight delivery.
+
+---
+
+## 👩‍💻 Author
+**Jahnavi Rangasai Parimi**  
+*Data Analyst | BI & Reporting*  
+[LinkedIn Profile](https://linkedin.com/in/jahnavi-rangasai-parimi-b21364251/) | [GitHub Profile](https://github.com/jahnavi1473/Data-Portfolio)
+
+> *Note: This project was completed as part of the PwC Switzerland Virtual Job Simulation program on Forage.*
+

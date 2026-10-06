@@ -1,199 +1,422 @@
-Online Retail Sales Analysis — Insights Summary
-Dataset Overview
+# Retail Sales Analytics & Power BI Dashboard
 
-The Online Retail dataset represents transactional data for a UK-based online retail store selling various gift and household items across multiple countries. Each record represents a product purchased within an order (invoice).
+## 📊 Project Overview
 
-After data cleaning and modeling, the final analytical dataset contained:
+This project analyzes **541,000+ retail transactions** from the Online Retail dataset to understand sales performance, product trends, geographic distribution, and customer purchasing behavior.
 
-Metric	Value
-Total Revenue	£10,062,821
-Total Orders	24,156
-Total Units Sold	5,381,202
-Total Customers	4,363
-Average Order Value	£416.58
-1. Overall Business Performance
-Total Revenue
+The project transforms raw transactional data into a structured **PostgreSQL data warehouse using a Star Schema** and connects it to an interactive **3-page Power BI dashboard** for business analysis.
 
-The business generated £10.06M in total revenue during the analyzed period.
+### Key Business Outcomes
 
-Insight
+- 💰 Generated **£10.06M** in total revenue across **24,156 orders**.
+- 🛍️ Sold **5.38M+ units** across the analyzed transactions.
+- 👥 Identified **4,363 customers** with available Customer IDs.
+- 📊 Calculated an overall **Average Order Value of £416.58**.
+- 🇬🇧 The **United Kingdom is the dominant market** by order volume and revenue contribution.
+- 📈 **November 2011** was the strongest revenue month, generating approximately **£1.48M**.
+- 🏆 **REGENCY CAKESTAND 3 TIER** generated the highest product revenue at approximately **£164.8K**.
+- 📦 **SMALL POPCORN HOLDER** was the highest-selling product by quantity, with **56,450 units sold**.
+- ⚠️ Transactions with missing Customer IDs generated **£1.70M**, representing **16.87% of total revenue**, demonstrating why unidentified transactions should not simply be removed from revenue analysis.
 
-The dataset indicates a strong online retail operation with multi-million revenue across a single year of activity.
+---
 
-Total Orders
+## 🚀 Business Problem & Solution
 
-A total of 24,156 unique orders were processed.
+| Business Problem | Solution |
+| :--- | :--- |
+| Raw transactional data contained cancellations, invalid records, missing customer IDs, and non-product transactions. | Cleaned and transformed the dataset using **PostgreSQL SQL**. |
+| Revenue analysis could be distorted if transactions with missing Customer IDs were removed. | Preserved unidentified transactions and labeled them as **"Unknown Customer"** for customer-level analysis. |
+| Raw transactional data was difficult to analyze efficiently. | Designed a **Star Schema data warehouse** with fact and dimension tables. |
+| Business users needed a consolidated view of sales performance. | Built a **3-page interactive Power BI dashboard** covering business, product, and customer performance. |
+| Product analysis needed to distinguish actual products from non-product transactions. | Classified transactions into **Product, Shipping, Gift Voucher, and Sample** categories and excluded non-product transactions from product-level analysis. |
 
-Insight
+---
 
-This indicates consistent transaction activity and a steady flow of customer purchases throughout the year.
+## 🛠️ Tech Stack
 
-Total Units Sold
+- **Database:** PostgreSQL
+- **Visualization:** Microsoft Power BI
+- **Languages:** SQL
+- **Analytics:** Aggregations, JOINs, CASE statements, Window Functions
+- **Data Modeling:** Star Schema
+- **BI:** Power BI Data Modeling & DAX
+- **Data Preparation:** SQL-based ETL and data cleaning
 
-The store sold 5.38 million product units.
+---
 
-Insight
+## 🧹 Data Cleaning & Preparation
 
-The high number of units sold suggests that many products are relatively low-priced and purchased in bulk quantities.
+The raw Online Retail dataset contained **541,000+ transaction records**.
 
-Total Customers
+Data preparation was performed in PostgreSQL before analysis.
 
-There were 4,363 identifiable customers.
+### Key Cleaning Steps
 
-Insight
+- **Removed cancelled transactions** where `InvoiceNo` begins with `C`.
+- **Filtered invalid records** and non-standard transaction codes.
+- **Calculated revenue** using:
 
-The business serves a moderately sized customer base, with many customers making repeat purchases.
+```sql
+Quantity * UnitPrice
+```
 
-Average Order Value
+- **Standardized Stock Codes** using uppercase formatting.
+- **Preserved transactions with missing Customer IDs** instead of removing their revenue.
+- Labeled missing Customer IDs as **"Unknown Customer"** in customer-level analysis.
+- Classified transaction types to distinguish:
+  - Product
+  - Shipping
+  - Gift Voucher
+  - Sample
 
-The average order value is approximately £416.58.
+### Important Data Treatment
 
-Insight
+Customer-level metrics only include transactions with identified Customer IDs.
 
-Customers typically purchase multiple products per order, suggesting bulk buying behavior or wholesale-like purchasing patterns.
+However, **overall revenue, order, and unit metrics include valid transactions from both identified and unidentified customers**.
 
-2. Sales Trend Analysis
-Monthly Revenue Trends
+This prevents the loss of legitimate revenue simply because a Customer ID was unavailable.
 
-Revenue shows strong seasonal patterns.
+---
 
-Month	Key Observation
-September 2011	Revenue begins to increase
-October 2011	Continued growth
-November 2011	Peak revenue month (£1.48M)
+## 🏗️ Data Warehouse Design
 
-Insight
+A **Star Schema** was implemented to organize the transactional data for analytical reporting.
 
-Sales increase significantly toward the end of the year, likely due to holiday shopping demand.
+### Fact Table
 
-Monthly Order Volume
+**`fact_sales`**
 
-The highest number of orders also occurred in November (3,288 orders).
+Contains transactional-level business metrics:
 
-Insight
+- InvoiceNo
+- StockCode
+- CustomerID
+- Country
+- Order Date
+- Quantity
+- Unit Price
+- Revenue
 
-The increase in orders aligns with the revenue spike, confirming that the growth is driven by higher purchasing activity rather than price changes.
+### Dimension Tables
 
-Daily Sales Trends
+**`dim_product`**
 
-Daily revenue fluctuates significantly.
+- StockCode
+- Product Name
+- Product Type
 
-Highest daily revenue
+**`dim_customer`**
 
-14 Nov 2011 → £113,315
+- CustomerID
+- Customer information
 
-Insight
+**`dim_country`**
 
-Large spikes in sales occur during peak seasonal shopping periods, reinforcing the strong holiday effect.
+- Country
 
-3. Product Performance Analysis
-Top Products by Revenue
-Product	Revenue
-DOTCOM POSTAGE	£206K
-REGENCY CAKESTAND 3 TIER	£164K
-WHITE HANGING HEART T-LIGHT HOLDER	£99K
+**`dim_date`**
 
-Insight
+- Order Date
+- Day
+- Month
+- Year
 
-Shipping-related revenue contributes significantly to overall sales, while several household products generate substantial revenue.
+### Simplified Architecture
 
-Top Products by Units Sold
-Product	Units Sold
-SMALL POPCORN HOLDER	56,450
-WORLD WAR 2 GLIDERS ASSTD DESIGNS	53,847
-JUMBO BAG RED RETROSPOT	47,363
+```text
+                  dim_product
+                       |
+                       |
+dim_customer ---- fact_sales ---- dim_country
+                       |
+                       |
+                    dim_date
+```
 
-Insight
+This structure separates transactional measures from descriptive attributes and supports efficient Power BI analysis.
 
-Some products sell in extremely high volumes but may not generate the highest revenue, indicating low-price high-volume items.
+---
 
-Revenue Distribution Across Products
+# ❓ Business Questions & Answers
 
-Observation
+## 1. How much revenue did the business generate?
 
-A relatively small number of products generate a large portion of revenue.
+**Answer:** The analyzed transactions generated **£10.06M in total revenue** across **24,156 orders**.
 
-Insight
+The overall Average Order Value was approximately **£416.58**.
 
-This suggests a Pareto-like pattern, where a subset of products drives most business performance.
+---
 
-4. Geographic Sales Analysis
-Revenue by Country
-Country	Revenue
-United Kingdom	£8.5M
+## 2. How important are unidentified customers?
 
-Insight
+A significant amount of revenue comes from transactions where Customer ID is unavailable.
 
-The United Kingdom dominates revenue, accounting for the vast majority of sales.
+| Customer Status | Orders | Revenue | Revenue Share |
+| :--- | ---: | ---: | ---: |
+| Identified Customer | 21,906 | £8,365,279.92 | 83.13% |
+| Unknown Customer | 2,250 | £1,697,541.50 | 16.87% |
+| **Total** | **24,156** | **£10,062,821.42** | **100%** |
 
-Orders by Country
-Country	Orders
-United Kingdom	21,823
+### Business Insight
 
-Insight
+Approximately **£1.70M (16.87%) of revenue** is associated with unidentified customers.
 
-The company’s core customer base is domestic, while international markets contribute smaller portions of revenue.
+Therefore, removing NULL Customer IDs before calculating total revenue would have resulted in a significant understatement of business performance.
 
-5. Customer Analysis
-Top Customers by Revenue
-CustomerID	Total Spending
-14646	£279,801
+---
 
-Insight
+## 3. When are sales highest?
 
-A small number of customers generate very high revenue, which may indicate bulk buyers or business clients.
+**November 2011** was the strongest month in the dataset, generating approximately:
 
-Customer Purchase Frequency
-CustomerID	Orders
-14911	242 purchases
+**£1.48M in revenue**
 
-Insight
+This makes November an important period for inventory planning, sales preparation, and marketing activity.
 
-Some customers demonstrate strong loyalty and repeat purchasing behavior.
+---
 
-6. Revenue by Product Type
-Product Type	Revenue
-Product	£9.79M
-Shipping	£272K
-Gift Voucher	£685
-Sample	-£3,049
+## 4. Which products generate the most revenue?
 
-Insight
+Product-level analysis excludes non-product transactions such as Shipping, Gift Vouchers, and Samples.
 
-Product sales account for over 97% of total revenue.
+### Top Products by Revenue
 
-Shipping contributes a smaller but notable portion.
+| Product | Revenue |
+| :--- | ---: |
+| REGENCY CAKESTAND 3 TIER | £164,762.19 |
+| WHITE HANGING HEART T-LIGHT HOLDER | £99,846.98 |
+| PARTY BUNTING | £98,302.98 |
+| JUMBO BAG RED RETROSPOT | £92,356.03 |
+| RABBIT NIGHT LIGHT | £66,756.59 |
 
-Gift vouchers represent a negligible share.
+**REGENCY CAKESTAND 3 TIER** was the highest-revenue product.
 
-Samples show slightly negative revenue due to promotional giveaways.
+---
 
-Key Business Insights
+## 5. Which products sell the highest volume?
 
-The business generated over £10M in revenue from more than 24K orders.
+The highest-selling product by quantity was:
 
-Sales demonstrate strong seasonal patterns, with November being the peak month.
+**SMALL POPCORN HOLDER — 56,450 units**
 
-The UK market dominates both revenue and orders, indicating a primarily domestic business.
+Other high-volume products included:
 
-A small number of products drive a large share of revenue.
+- WORLD WAR 2 GLIDERS ASSTD DESIGNS
+- JUMBO BAG RED RETROSPOT
+- WHITE HANGING HEART T-LIGHT HOLDER
+- ASSORTED COLOUR BIRD ORNAMENT
 
-High-volume products are not always the highest-revenue products.
+This demonstrates that **high sales volume and high revenue are not necessarily the same thing**, making both metrics important for product analysis.
 
-Certain customers contribute disproportionately high revenue.
+---
 
-Product sales make up the vast majority of revenue compared to shipping and vouchers.
+## 6. Which customers generate the most revenue?
 
-Next Phase
+The highest-value identified customer was:
 
-The insights derived from SQL analysis will now be translated into a Power BI dashboard, including:
+**Customer 14646 — £279,801.02**
 
-Executive overview KPIs
+Other high-value customers included:
 
-Sales trend visualizations
+- Customer 18102 — £259,657.30
+- Customer 17450 — £188,797.13
+- Customer 14911 — £128,882.13
+- Customer 12415 — £123,725.45
 
-Product performance analysis
+These customers represent potential targets for retention and loyalty initiatives.
 
-Geographic distribution
+---
 
-Customer insights
+## 7. Which markets contribute most to sales?
+
+The **United Kingdom** is the dominant market in the dataset by order volume and revenue contribution.
+
+The dashboard provides a geographic view of revenue distribution across countries, allowing the business to identify its strongest markets and evaluate opportunities for international expansion.
+
+---
+
+# 📊 Power BI Dashboard
+
+The final solution consists of **3 interactive Power BI pages**.
+
+## 1️⃣ Business Overview
+
+Provides a high-level view of overall business performance.
+
+### KPIs
+
+- Total Revenue — **£10.06M**
+- Total Orders — **24.2K**
+- Total Customers — **4.36K**
+- Average Order Value — **£416.58**
+- Total Units Sold — **5.38M**
+
+### Visuals
+
+- Monthly Revenue Trend
+- Top Products by Revenue
+- Revenue by Country
+
+---
+
+## 2️⃣ Product Performance
+
+Analyzes product-level sales performance.
+
+### Visuals
+
+- Revenue Distribution by Product Type
+- Top 10 Products by Units Sold
+- Product Sales Details
+- Product Revenue vs Sales Volume
+- Sales Volume by Product Type
+
+### Key Finding
+
+Actual products account for approximately **97.27% of revenue**, while the remaining revenue comes primarily from transaction types such as Shipping and other non-product categories.
+
+---
+
+## 3️⃣ Customer Performance
+
+Analyzes customer revenue contribution and purchasing behavior.
+
+### Visuals
+
+- Customer Revenue Table
+- Top 10 Customers by Revenue
+- Orders by Country
+- Customers with Highest Order Frequency
+
+### Key Finding
+
+The dashboard explicitly separates **identified customers from Unknown Customers**, ensuring that missing Customer IDs do not cause legitimate revenue to disappear from the analysis.
+
+---
+
+# 📈 Key Metrics
+
+| Metric | Value |
+| :--- | ---: |
+| Total Revenue | **£10,062,821.42** |
+| Total Orders | **24,156** |
+| Total Units Sold | **5,381,202** |
+| Identified Customers | **4,363** |
+| Average Order Value | **£416.58** |
+| Identified Customer Revenue | **£8,365,279.92** |
+| Unknown Customer Revenue | **£1,697,541.50** |
+| Unknown Customer Revenue Share | **16.87%** |
+| Peak Revenue Month | **November 2011** |
+| Peak Monthly Revenue | **£1,479,061.84** |
+| Top Product by Revenue | **REGENCY CAKESTAND 3 TIER** |
+| Top Product Revenue | **£164,762.19** |
+| Top Product by Units | **SMALL POPCORN HOLDER** |
+| Top Product Units Sold | **56,450** |
+
+---
+
+# 🖼️ Dashboard Preview
+
+## Business Overview
+
+![Business Overview](Images/01_overview.png)
+
+*High-level KPIs, monthly revenue trends, top products, and geographic revenue distribution.*
+
+## Product Performance
+
+![Product Insights](Images/02_product_insights.png)
+
+*Product revenue contribution, sales volume, and product-level performance.*
+
+## Customer Performance
+
+![Customer Insights](Images/03_customer_insights.png)
+
+*Customer revenue contribution, top customers, order frequency, and geographic order distribution.*
+
+---
+
+# 📂 Project Structure
+
+```text
+Retail_Analysis/
+│
+├── Dataset/
+│   └── online_retail.csv
+│
+├── SQL/
+│   ├── data_cleaning.sql
+│   ├── data_modeling.sql
+│   └── analysis_queries.sql
+│
+├── PowerBI/
+│   └── retail_sales_dashboard.pbix
+│
+├── Images/
+│   ├── overview.png
+│   ├── product_insights.png
+│   └── customer_insights.png
+│
+└── README.md
+```
+
+---
+
+# 🔄 Analytical Workflow
+
+```text
+Raw Online Retail Dataset
+          ↓
+     Data Cleaning
+       PostgreSQL
+          ↓
+   Data Transformation
+          ↓
+    Star Schema Model
+          ↓
+       SQL Analysis
+          ↓
+    Power BI Data Model
+          ↓
+   Interactive Dashboard
+          ↓
+ Business Insights & Decisions
+```
+
+---
+
+# 🚀 Future Scope
+
+The current project focuses on descriptive and diagnostic analytics.
+
+Potential extensions include:
+
+### Predictive Sales Forecasting
+
+Use historical revenue trends to forecast future sales and improve inventory and marketing planning.
+
+### RFM Customer Segmentation
+
+Apply Recency, Frequency, and Monetary analysis to identify high-value, loyal, and at-risk customers.
+
+### Customer Retention Analysis
+
+Investigate repeat purchasing behavior and develop strategies to increase customer retention.
+
+### Automated Data Refresh
+
+Connect the Power BI model to the PostgreSQL database and configure scheduled refresh for a more automated reporting workflow.
+
+---
+
+# 👩‍💻 Author
+
+**Jahnavi Rangasai Parimi**
+
+*Data Analyst | BI & Reporting*
+
+**LinkedIn:** linkedin.com/in/jahnavi-rangasai-parimi-b21364251/
+
+**GitHub:** github.com/jahnavi1473/Data-Portfolio
