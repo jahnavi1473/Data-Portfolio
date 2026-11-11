@@ -32,7 +32,7 @@ CREATE TABLE beneficiary_raw (
 SET GLOBAL local_infile = 1;
 SHOW VARIABLES LIKE 'local_infile';
 
-LOAD DATA LOCAL INFILE 'C:/Users/DELL/Desktop/healthcare-claims-analytics/data/beneficiary.csv'
+LOAD DATA LOCAL INFILE 'C:/Users/Jahnavi P/Desktop/Projects/healthcare-claims-analytics/data/beneficiary.csv'
 INTO TABLE beneficiary_raw
 FIELDS TERMINATED BY ','
 IGNORE 1 ROWS;
