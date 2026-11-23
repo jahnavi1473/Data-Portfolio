@@ -333,7 +333,7 @@ BUSINESS IMPLICATION:
 
 
 /* =============================================================
-					Quantity Sold by Product Category
+			Quantity Sold by Product Category
 ============================================================= */
 
 SELECT
@@ -389,7 +389,7 @@ BUSINESS IMPLICATION:
 
 
 /* =============================================================
-					Category Revenue Contribution (%)
+			Category Revenue Contribution (%)
 
 Business question: What percentage of total revenue does each 
 product category contribute?
@@ -461,7 +461,7 @@ BUSINESS IMPLICATION:
 
 
 /* =============================================================
-					Average Product Price by Category
+			Average Product Price by Category
 ================================================================= */
 
 SELECT
@@ -1101,3 +1101,595 @@ Further investigation should examine late-delivery rates
 and geographic delivery patterns.
 ========================================================== */
 
+/* ============================================================
+   SECTION 8.5.4 — Late Delivery Rate by Customer State
+
+   BUSINESS QUESTION:
+   Which customer states have the highest percentage of
+   delivered orders that arrived after the estimated date?
+
+   DEFINITION:
+   Late delivery rate = late delivered orders / all delivered
+   orders with both actual and estimated delivery dates.
+   ============================================================ */
+
+SELECT
+    c.customer_state,
+
+    COUNT(DISTINCT o.order_id) AS total_delivered_orders,
+
+    COUNT(DISTINCT o.order_id) FILTER (
+        WHERE o.order_delivered_customer_date::timestamp
+              > o.order_estimated_delivery_date::timestamp
+    ) AS late_orders,
+
+    ROUND(
+        COUNT(DISTINCT o.order_id) FILTER (
+            WHERE o.order_delivered_customer_date::timestamp
+                  > o.order_estimated_delivery_date::timestamp
+        ) * 100.0
+        / NULLIF(COUNT(DISTINCT o.order_id), 0),
+        2
+    ) AS late_delivery_rate_pct
+
+FROM orders o
+
+JOIN customers c
+    ON o.customer_id = c.customer_id
+
+WHERE o.order_status = 'delivered'
+  AND o.order_delivered_customer_date IS NOT NULL
+  AND o.order_estimated_delivery_date IS NOT NULL
+
+GROUP BY c.customer_state
+
+ORDER BY late_delivery_rate_pct DESC;
+
+/* ===========================================================
+KEY FINDINGS:
+1. AL recorded the highest late-delivery rate at 23.93%,
+   followed by MA at 19.67% and PI at 15.97%.
+
+2. SP recorded the highest number of late deliveries
+   (2,387 orders), despite a relatively low late-delivery
+   rate of 5.89%, reflecting its significantly higher
+   order volume.
+
+3. The overall late-delivery rate across the 27 states
+   was approximately 8.11%.
+
+BUSINESS IMPLICATION:
+Regional logistics performance varies considerably.
+High-delay states such as AL, MA and PI may require
+further investigation into delivery infrastructure,
+carrier performance and regional logistics constraints.
+
+High-volume states such as SP should also be monitored
+because even a relatively low delay percentage can
+represent a substantial number of delayed orders.
+
+NOTE:
+State-level rates based on smaller order volumes should
+be interpreted cautiously.
+======================================================== */
+
+/* ============================================================
+   SECTION 8.6 — Seller Performance
+
+   Business questions:
+   - Which sellers generate the most delivered revenue?
+   - Which sellers have the highest order volume?
+   - What review scores are associated with seller orders?
+
+   NOTE:
+   Olist order_items does not contain a quantity column.
+   COUNT(*) is used to count delivered order-item rows.
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   8.6.1 — Seller Revenue, Order Volume and Items Sold
+
+   Business question: How do sellers perform in terms of 
+   order volume, revenue and items sold?
+   ------------------------------------------------------------ */
+
+SELECT
+    s.seller_id,
+    s.seller_state,
+
+    COUNT(DISTINCT o.order_id) AS delivered_orders,
+
+    COUNT(*) AS delivered_order_items,
+
+    ROUND(
+        SUM(oi.price + oi.freight_value)::numeric,
+        2
+    ) AS delivered_revenue,
+
+    ROUND(
+        (
+            SUM(oi.price + oi.freight_value)
+            / NULLIF(COUNT(DISTINCT o.order_id), 0)
+        )::numeric,
+        2
+    ) AS revenue_per_seller_order
+
+FROM orders o
+
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+
+JOIN sellers s
+    ON oi.seller_id = s.seller_id
+
+WHERE o.order_status = 'delivered'
+
+GROUP BY
+    s.seller_id,
+    s.seller_state
+
+ORDER BY delivered_revenue DESC;
+
+/*
+KEY FINDINGS:
+
+1. Sellers from SP occupy four of the top five
+   revenue positions.
+
+2. The highest-revenue seller generated 247,007.06
+   across 1,124 delivered orders.
+
+3. A seller from BA generated 230,797.02 across
+   only 348 delivered orders, resulting in a much
+   higher revenue per seller order of 663.21.
+
+4. Seller revenue performance varies considerably
+   based on order volume and revenue per order.
+
+BUSINESS IMPLICATION:
+
+Seller performance should be evaluated using both
+revenue contribution and order volume.
+
+High-revenue-per-order sellers may offer opportunities
+to understand product mix and purchasing patterns,
+while high-volume sellers are important to marketplace
+operational performance.
+*/
+
+/* ------------------------------------------------------------
+   8.6.2 — Seller Review Performance
+
+   Review scores are first averaged at order level. An order
+   containing items from multiple sellers is associated with
+   each seller that fulfilled an item in that order.
+
+   Interpret this as review performance associated with
+   seller orders, not a direct causal measure of seller quality.
+   ------------------------------------------------------------ */
+
+WITH order_review_scores AS
+(
+    SELECT
+        order_id,
+        AVG(review_score::numeric) AS average_order_review_score
+    FROM order_reviews
+    GROUP BY order_id
+),
+
+seller_orders AS
+(
+    SELECT DISTINCT
+        oi.seller_id,
+        o.order_id
+    FROM orders o
+
+    JOIN order_items oi
+        ON o.order_id = oi.order_id
+
+    WHERE o.order_status = 'delivered'
+)
+
+SELECT
+    s.seller_id,
+    s.seller_state,
+
+    COUNT(DISTINCT so.order_id) AS reviewed_delivered_orders,
+
+    ROUND(
+        AVG(ors.average_order_review_score)::numeric,
+        2
+    ) AS average_review_score
+
+FROM seller_orders so
+
+JOIN sellers s
+    ON so.seller_id = s.seller_id
+
+JOIN order_review_scores ors
+    ON so.order_id = ors.order_id
+
+GROUP BY
+    s.seller_id,
+    s.seller_state
+
+ORDER BY average_review_score DESC;
+
+/*
+KEY FINDINGS — SELLER REVIEW PERFORMANCE
+
+1. Analysed 2,965 sellers with 97,159 reviewed delivered orders.
+2. Average seller-level review score was approximately 4.18/5.
+3. High-volume sellers did not consistently receive high review scores.
+4. Among the five highest-revenue sellers, average review scores
+   ranged from 3.50 to 4.37.
+5. Seller revenue and customer satisfaction should be evaluated
+   together when assessing seller performance.
+
+BUSINESS IMPLICATION:
+Marketplace management should monitor both seller revenue and
+customer review performance. High-revenue sellers with relatively
+low ratings may require further investigation.
+*/
+
+/* ------------------------------------------------------------
+   8.6.3 — Top 10 Sellers by Delivered Revenue
+   ------------------------------------------------------------ */
+
+SELECT
+    s.seller_id,
+    s.seller_state,
+
+    COUNT(DISTINCT o.order_id) AS delivered_orders,
+
+    ROUND(
+        SUM(oi.price + oi.freight_value)::numeric,
+        2
+    ) AS delivered_revenue
+
+FROM orders o
+
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+
+JOIN sellers s
+    ON oi.seller_id = s.seller_id
+
+WHERE o.order_status = 'delivered'
+
+GROUP BY
+    s.seller_id,
+    s.seller_state
+
+ORDER BY delivered_revenue DESC
+
+LIMIT 10;
+
+/*
+KEY FINDINGS — TOP 10 SELLERS BY DELIVERED REVENUE
+
+1. The highest-revenue seller generated 247,007.06
+   across 1,124 delivered orders.
+
+2. 9 out of the top 10 sellers are located in São Paulo (SP),
+   indicating a strong concentration of high-revenue sellers
+   in this state.
+
+3. The seller with the highest delivered order volume recorded
+   1,772 orders and generated 231,220.43 in revenue.
+
+4. A seller from Bahia (BA) generated 230,797.02 from only
+   348 delivered orders, indicating a high revenue per order.
+
+5. The tenth-ranked seller generated 156,606.48 in delivered
+   revenue.
+
+BUSINESS IMPLICATION:
+
+High-revenue sellers are predominantly concentrated in SP.
+However, order volume alone does not determine revenue
+contribution. Seller performance should be evaluated using
+both delivered revenue and order volume.
+*/
+
+/* ------------------------------------------------------------
+   8.6.4 — Seller Revenue Contribution and Cumulative Share
+
+   Business question:
+   How concentrated is delivered revenue across sellers?
+   ------------------------------------------------------------ */
+
+WITH seller_revenue AS
+(
+    SELECT
+        oi.seller_id,
+        SUM(oi.price + oi.freight_value) AS delivered_revenue
+
+    FROM orders o
+
+    JOIN order_items oi
+        ON o.order_id = oi.order_id
+
+    WHERE o.order_status = 'delivered'
+
+    GROUP BY oi.seller_id
+),
+
+ranked_sellers AS
+(
+    SELECT
+        seller_id,
+        delivered_revenue,
+
+        SUM(delivered_revenue) OVER (
+            ORDER BY delivered_revenue DESC
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS cumulative_revenue,
+
+        SUM(delivered_revenue) OVER () AS marketplace_revenue
+
+    FROM seller_revenue
+)
+
+SELECT
+    seller_id,
+
+    ROUND(delivered_revenue::numeric, 2) AS delivered_revenue,
+
+    ROUND(
+    (
+        delivered_revenue * 100.0
+        / NULLIF(marketplace_revenue, 0)
+    )::numeric,
+    2
+) AS seller_revenue_pct,
+
+ROUND(
+    (
+        cumulative_revenue * 100.0
+        / NULLIF(marketplace_revenue, 0)
+    )::numeric,
+    2
+) AS cumulative_revenue_pct
+
+FROM ranked_sellers
+
+ORDER BY delivered_revenue DESC;
+
+/*
+KEY FINDINGS — SELLER REVENUE CONTRIBUTION AND CUMULATIVE SHARE
+
+1. Analysed 2,970 sellers contributing to delivered revenue.
+
+2. The top 10 sellers contribute 12.93% of total delivered revenue.
+
+3. The top 50 sellers contribute 32.54% of total delivered revenue.
+
+4. The top 100 sellers contribute 44.81% of total delivered revenue.
+
+5. Approximately 132 sellers (4.44% of sellers) account for
+   50% of total delivered revenue.
+
+6. Approximately 551 sellers (18.55% of sellers) account for
+   80% of total delivered revenue.
+
+BUSINESS IMPLICATION:
+
+Marketplace revenue is concentrated among a relatively small
+group of sellers. Monitoring high-contribution sellers is
+important for revenue stability, while developing smaller
+sellers may create opportunities for marketplace growth.
+*/
+
+/* ============================================================
+   SECTION 8.7 — Regional Analysis
+
+   Business questions:
+   - Which customer states generate the most revenue?
+   - Which seller states fulfill the most marketplace revenue?
+   - How does business flow between customer and seller states?
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   8.7.1 — Marketplace Performance by Customer State
+   ------------------------------------------------------------ */
+
+SELECT
+    c.customer_state,
+
+    COUNT(DISTINCT o.order_id) AS delivered_orders,
+
+    COUNT(DISTINCT c.customer_unique_id) AS unique_customers,
+	
+	ROUND(
+        SUM(oi.price + oi.freight_value)::numeric,
+        2
+    ) AS delivered_revenue,
+
+    ROUND(
+        (
+            SUM(oi.price + oi.freight_value)
+            / NULLIF(COUNT(DISTINCT o.order_id), 0)
+        )::numeric,
+        2
+    ) AS average_order_value
+
+FROM orders o
+
+JOIN customers c
+    ON o.customer_id = c.customer_id
+
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+
+WHERE o.order_status = 'delivered'
+
+GROUP BY c.customer_state
+
+ORDER BY delivered_revenue DESC;
+
+/*
+KEY FINDINGS — MARKETPLACE PERFORMANCE BY CUSTOMER STATE
+
+1. São Paulo (SP) generated the highest delivered revenue
+   of 5,769,703.15 across 40,501 delivered orders.
+
+2. Rio de Janeiro (RJ) and Minas Gerais (MG) ranked second
+   and third in delivered revenue.
+
+3. SP, RJ and MG together contributed approximately 62.2%
+   of total delivered revenue.
+
+4. São Paulo recorded the highest order volume but an
+   average order value of 142.46.
+
+5. Paraíba (PB) recorded the highest average order value
+   of 266.61, despite having only 517 delivered orders.
+
+6. Several lower-volume states, including AC, AL and RO,
+   also recorded relatively high average order values.
+
+BUSINESS IMPLICATION:
+
+The marketplace has a strong revenue concentration in
+SP, RJ and MG. These states are important markets for
+retaining customers and sustaining revenue.
+
+At the same time, states with higher average order values
+but lower order volumes may represent opportunities for
+customer acquisition and market expansion.
+*/
+
+
+/* ------------------------------------------------------------
+   8.7.2 — Marketplace Performance by Seller State
+   ------------------------------------------------------------ */
+
+SELECT
+    s.seller_state,
+
+    COUNT(DISTINCT o.order_id) AS delivered_orders,
+
+    COUNT(DISTINCT s.seller_id) AS sellers,
+
+    ROUND(
+        SUM(oi.price + oi.freight_value)::numeric,
+        2
+    ) AS delivered_revenue
+
+FROM orders o
+
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+
+JOIN sellers s
+    ON oi.seller_id = s.seller_id
+
+WHERE o.order_status = 'delivered'
+
+GROUP BY s.seller_state
+
+ORDER BY delivered_revenue DESC;
+
+/*
+KEY FINDINGS — MARKETPLACE PERFORMANCE BY SELLER STATE
+
+1. São Paulo (SP) generated the highest delivered revenue
+   of 9,957,056.91, supported by 1,769 sellers.
+
+2. SP contributed approximately 64.6% of total seller-state
+   delivered revenue.
+
+3. Paraná (PR) and Minas Gerais (MG) ranked second and third
+   in seller-state delivered revenue.
+
+4. Seller revenue contribution varies significantly across
+   states and is not directly proportional to seller count.
+
+5. Bahia (BA) generated 297,146.93 in delivered revenue
+   with only 18 sellers.
+
+BUSINESS IMPLICATION:
+
+The marketplace's seller-side revenue is highly concentrated
+in São Paulo. Understanding seller distribution and revenue
+contribution across other states can help identify regional
+supply gaps and opportunities for seller expansion.
+*/
+
+
+/* ------------------------------------------------------------
+   8.7.3 — Customer State vs Seller State
+
+   Business question:
+   Which customer-state and seller-state combinations account
+   for the most delivered orders and revenue?
+
+   Each row represents a customer-state / seller-state pair.
+   An order can appear in more than one pair if it contains
+   items fulfilled by sellers in different states.
+   ------------------------------------------------------------ */
+
+SELECT
+    c.customer_state,
+    s.seller_state,
+
+    COUNT(DISTINCT o.order_id) AS delivered_orders,
+
+    COUNT(*) AS delivered_order_items,
+
+    ROUND(
+        SUM(oi.price + oi.freight_value)::numeric,
+        2
+    ) AS delivered_revenue
+
+FROM orders o
+
+JOIN customers c
+    ON o.customer_id = c.customer_id
+
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+
+JOIN sellers s
+    ON oi.seller_id = s.seller_id
+
+WHERE o.order_status = 'delivered'
+
+GROUP BY
+    c.customer_state,
+    s.seller_state
+
+ORDER BY delivered_revenue DESC;
+
+
+/*
+KEY FINDINGS — CUSTOMER STATE VS SELLER STATE
+
+1. The SP customer–SP seller combination generated the highest
+   delivered revenue of 3,990,103.25 across 30,834 orders.
+
+2. São Paulo sellers serve customers across multiple states.
+   Major combinations include:
+   - RJ customers and SP sellers: 1,256,630.90
+   - MG customers and SP sellers: 1,100,460.81
+   - RS customers and SP sellers: 524,833.37
+
+3. Cross-state transactions represent significant marketplace
+   activity, with several high-revenue customer–seller
+   combinations involving different states.
+
+4. Same-state transactions are particularly significant in SP.
+   Other states also generate revenue through both local and
+   cross-state seller relationships.
+
+BUSINESS IMPLICATION:
+
+São Paulo is an important seller hub serving customers both
+within and outside its state. Understanding customer–seller
+geographical relationships can help the marketplace evaluate
+regional supply distribution, fulfilment coverage and potential
+opportunities for seller expansion.
+*/
