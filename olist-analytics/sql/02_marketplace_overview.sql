@@ -3,132 +3,120 @@
    FILE: 02_marketplace_overview.sql
 
    PURPOSE:
-   Analyze overall marketplace performance including:
+   Analyze overall marketplace performance, including:
    - Revenue
    - Orders
-   - Average Order Value
-   - Monthly Trends
-   - Yearly Trends
+   - Average Order Value (AOV)
+   - Monthly trends
+   - Yearly trends
+   - Comparable-period year-over-year growth
 
-   DATA QUALITY NOTE:
+   DATA COVERAGE NOTE:
+   The dataset contains incomplete edge months:
+   - September 2016
+   - October 2016
+   - December 2016
+   - September 2018
+   - October 2018
 
-   The following periods appear incomplete and should be
-   treated carefully during trend analysis:
+   Interpret these months cautiously. In particular, do not
+   treat the low values in September/October 2018 as evidence
+   of a business decline.
 
-   - Sep 2016
-   - Oct 2016
-   - Dec 2016
-   - Sep 2018
-   - Oct 2018
+   REVENUE DEFINITION:
+   Revenue in this file is calculated from order_payments.payment_value.
+   It represents recorded payment value across orders in the dataset;
+   it is not the delivered-order item revenue used in the dashboard
+   analysis file (08_dashboard_queries.sql).
 
-   These periods are included in the dataset but should
-   generally be excluded from business trend reporting.
-
+   Currency: Brazilian Real (BRL / R$).
 ============================================================ */
 
 
 /* ============================================================
-   TOTAL REVENUE
-============================================================ */
-
-SELECT ROUND(SUM(payment_value)::NUMERIC, 2) AS total_revenue
-FROM order_payments;
-
-/*
-Finding:
-
-Total Marketplace Revenue = $16,008,872.12
-
-The marketplace generated approximately $16 million in sales 
-during the available analysis period.
-*/
-
-
-/* ============================================================
-   AVERAGE ORDER VALUE (AOV)
-============================================================ */
-
-SELECT ROUND(AVG(payment_value)::NUMERIC, 2) AS average_order_value
-FROM order_payments;
-
-/*
-Finding:
-
-Average Order Value (AOV) = $154.10
-
-On average, customers spend approximately $154 per order.
-*/
-
-
-/* ============================================================
-   MONTHLY REVENUE TREND
+   1. TOTAL MARKETPLACE REVENUE
 ============================================================ */
 
 SELECT
-EXTRACT(MONTH FROM o.order_purchase_timestamp::TIMESTAMP) AS month_number,
-TO_CHAR(o.order_purchase_timestamp::TIMESTAMP,'Month') AS month_name,
-ROUND(SUM(op.payment_value)::NUMERIC, 2) AS revenue
+    ROUND(SUM(payment_value)::NUMERIC, 2) AS total_revenue
+FROM order_payments;
+
+/*
+RESULT:
+Total marketplace payment revenue = R$16,008,872.12
+
+INTERPRETATION:
+The sum includes payment records across the dataset and all
+order statuses represented in order_payments.
+*/
+
+
+/* ============================================================
+   2. AVERAGE ORDER VALUE (ORDER-LEVEL)
+============================================================ */
+
+WITH order_payments_total AS
+(
+    SELECT
+        order_id,
+        SUM(payment_value) AS order_total
+    FROM order_payments
+    GROUP BY order_id
+)
+
+SELECT
+    COUNT(*) AS orders_with_payments,
+    ROUND(AVG(order_total)::NUMERIC, 2) AS average_order_value
+FROM order_payments_total;
+
+/*
+RESULT:
+- Orders with payment records: 99,440
+- Average order value: R$160.99
+
+BUSINESS FINDINGS:
+- AOV is calculated after summing all payment records belonging
+  to each order. This avoids treating split payments as separate
+  orders when calculating the average.
+- One order in the orders table has no corresponding payment record.
+*/
+
+
+/* ============================================================
+   3. REVENUE BY CALENDAR MONTH (ALL YEARS COMBINED)
+============================================================ */
+
+SELECT
+    EXTRACT(MONTH FROM o.order_purchase_timestamp::TIMESTAMP) AS month_number,
+    TO_CHAR(o.order_purchase_timestamp::TIMESTAMP, 'Month') AS month_name,
+    ROUND(SUM(op.payment_value)::NUMERIC, 2) AS revenue
 FROM orders o
 JOIN order_payments op
-ON o.order_id = op.order_id
-GROUP BY EXTRACT(MONTH FROM o.order_purchase_timestamp::TIMESTAMP),
-TO_CHAR(o.order_purchase_timestamp::TIMESTAMP,'Month')
+    ON o.order_id = op.order_id
+GROUP BY
+    EXTRACT(MONTH FROM o.order_purchase_timestamp::TIMESTAMP),
+    TO_CHAR(o.order_purchase_timestamp::TIMESTAMP, 'Month')
 ORDER BY month_number;
 
 /*
-Finding:
+RESULTS:
+- Highest calendar-month revenue: May = R$1,746,900.97
+- Lowest calendar-month revenue: September = R$732,454.23
 
-Highest Revenue Month: May = $1,746,900.97
-
-Lowest Revenue Month: September = $732,454.23
-
-Revenue generally peaks during:
-- May
-- July
-- August
-
-September and October should be interpreted carefully 
-because of incomplete data periods.
+INTERPRETATION:
+These totals combine the same calendar month across all years.
+September and October are affected by incomplete edge-month coverage,
+so the lower September total should not be interpreted as a reliable
+seasonal pattern.
 */
 
 
 /* ============================================================
-   CHRONOLOGICAL MONTHLY REVENUE TREND
+   4. CHRONOLOGICAL MONTHLY REVENUE TREND
 ============================================================ */
 
 SELECT
-DATE_TRUNC('month',o.order_purchase_timestamp::TIMESTAMP) AS month,
-ROUND(SUM(op.payment_value)::NUMERIC, 2) AS revenue
-FROM orders o
-JOIN order_payments op
-ON o.order_id = op.order_id
-GROUP BY 1
-ORDER BY 1;
-
-/*
-Finding:
-
-Provides a true chronological revenue trend.
-"2017-11-01 00:00:00"	1194882.80 has highest revenue (nov 2017)
-"2018-04-01 00:00:00"	1160785.48 second highest (april 2018)
-"2018-03-01 00:00:00"	1159652.12 third high (march 2018)
-
-Useful for:
-- Time-series analysis
-- Trend visualization
-- Dashboard reporting
-*/
-
-
-/* ============================================================
-   YEARLY REVENUE
-============================================================ */
-
-SELECT
-    EXTRACT(
-        YEAR
-        FROM o.order_purchase_timestamp::TIMESTAMP
-    ) AS year,
+    DATE_TRUNC('month', o.order_purchase_timestamp::TIMESTAMP) AS month,
     ROUND(SUM(op.payment_value)::NUMERIC, 2) AS revenue
 FROM orders o
 JOIN order_payments op
@@ -137,138 +125,271 @@ GROUP BY 1
 ORDER BY 1;
 
 /*
-Results:
-
-2016 = $59,362.34
-2017 = $7,249,746.73
-2018 = $8,699,763.05
-
-Finding:
-
-Revenue increased approximately 20%
-from 2017 to 2018.
-
-This indicates strong marketplace growth.
+BUSINESS FINDINGS:
+- November 2017 recorded the highest chronological monthly revenue:
+  R$1,194,882.80.
+- Revenue remained strong from January through August 2018.
+- September and October 2018 have very low recorded revenue because
+  these are incomplete dataset months.
+- Use this query for a chronological monthly revenue line chart.
 */
 
 
 /* ============================================================
-   MONTHLY ORDER TREND
+   5. COMPARABLE-PERIOD REVENUE GROWTH (JANUARY–AUGUST)
+
+   Compare the same eight calendar months in 2017 and 2018.
+   This avoids comparing a partial 2018 year with the full 2017 year.
+============================================================ */
+
+WITH period_revenue AS
+(
+    SELECT
+        EXTRACT(YEAR FROM o.order_purchase_timestamp::TIMESTAMP) AS year,
+        SUM(op.payment_value) AS revenue
+    FROM orders o
+    JOIN order_payments op
+        ON o.order_id = op.order_id
+    WHERE
+        EXTRACT(YEAR FROM o.order_purchase_timestamp::TIMESTAMP) IN (2017, 2018)
+        AND EXTRACT(MONTH FROM o.order_purchase_timestamp::TIMESTAMP) BETWEEN 1 AND 8
+    GROUP BY 1
+),
+
+revenue_comparison AS
+(
+    SELECT
+        year,
+        revenue,
+        LAG(revenue) OVER (ORDER BY year) AS previous_period_revenue
+    FROM period_revenue
+)
+
+SELECT
+    year,
+    ROUND(revenue::NUMERIC, 2) AS jan_aug_revenue,
+    ROUND(previous_period_revenue::NUMERIC, 2) AS previous_year_jan_aug_revenue,
+    ROUND(
+        (
+            (revenue - previous_period_revenue)
+            / NULLIF(previous_period_revenue, 0) * 100
+        )::NUMERIC,
+        2
+    ) AS revenue_growth_percentage
+FROM revenue_comparison
+ORDER BY year;
+
+/*
+RESULTS:
+- January–August 2017 revenue: R$3,669,022.12
+- January–August 2018 revenue: R$8,694,733.84
+- Like-for-like revenue growth: approximately 136.96%
+
+INTERPRETATION:
+Revenue in January–August 2018 was approximately 136.96% higher
+than in January–August 2017. This is the more appropriate comparison
+for these years because it uses the same calendar-month window.
+*/
+
+
+/* ============================================================
+   6. YEARLY REVENUE OVERVIEW
+
+   Annual totals are useful for describing the data, but the years
+   have different coverage. Do not interpret the raw 2017–2018
+   difference as a like-for-like full-year growth rate.
+============================================================ */
+
+SELECT
+    EXTRACT(YEAR FROM o.order_purchase_timestamp::TIMESTAMP) AS year,
+    ROUND(SUM(op.payment_value)::NUMERIC, 2) AS revenue
+FROM orders o
+JOIN order_payments op
+    ON o.order_id = op.order_id
+GROUP BY 1
+ORDER BY 1;
+
+/*
+RESULTS:
+- 2016: R$59,362.34 (partial year)
+- 2017: R$7,249,746.73
+- 2018: R$8,699,763.05 (partial year)
+
+INTERPRETATION:
+The 2018 total is higher than the 2017 total even though 2018 has
+incomplete coverage. However, the two annual totals do not represent
+complete calendar years and should not be presented as a direct,
+like-for-like annual growth comparison.
+*/
+
+
+/* ============================================================
+   7. MONTHLY ORDER TREND (ALL YEARS COMBINED)
 ============================================================ */
 
 SELECT
     EXTRACT(MONTH FROM o.order_purchase_timestamp::TIMESTAMP) AS month_number,
-    TO_CHAR(
-        o.order_purchase_timestamp::TIMESTAMP,
-        'Month'
-    ) AS month_name,
+    TO_CHAR(o.order_purchase_timestamp::TIMESTAMP, 'Month') AS month_name,
     COUNT(*) AS orders_count
 FROM orders o
 GROUP BY
     EXTRACT(MONTH FROM o.order_purchase_timestamp::TIMESTAMP),
-    TO_CHAR(
-        o.order_purchase_timestamp::TIMESTAMP,
-        'Month'
-    )
+    TO_CHAR(o.order_purchase_timestamp::TIMESTAMP, 'Month')
 ORDER BY month_number;
 
 /*
-Finding:
+RESULTS:
+- Highest observed calendar-month order volume: August = 10,843 orders
+- Lowest observed calendar-month order volume: September = 4,305 orders
 
-Highest Order Volume:
-August = 10,843 orders
-
-Lowest Order Volume:
-September = 4,305 orders
-
-Order volume closely follows
-the revenue pattern.
+INTERPRETATION:
+These counts combine the same month across all years. September and
+October are affected by incomplete dataset coverage, so the low
+September total should not be interpreted as a reliable seasonal trend.
 */
 
 
 /* ============================================================
-   CHRONOLOGICAL MONTHLY ORDER TREND
+   8. CHRONOLOGICAL MONTHLY ORDER TREND
 ============================================================ */
 
 SELECT
-    DATE_TRUNC(
-        'month',
-        o.order_purchase_timestamp::TIMESTAMP
-    ) AS month,
+    DATE_TRUNC('month', o.order_purchase_timestamp::TIMESTAMP) AS month,
     COUNT(*) AS orders_count
 FROM orders o
 GROUP BY 1
 ORDER BY 1;
 
 /*
-Finding:
+INTERPRETATION:
+This query preserves year and month together and provides the
+chronological order trend for time-series reporting and dashboarding.
 
-Provides a true chronological order trend.
-
-Useful for:
-- Growth analysis
-- Dashboard visualizations
-- Time-series reporting
+OBSERVATION:
+- November 2017 recorded the highest monthly order volume:
+  7,544 orders.
+- September and October 2018 recorded only 16 and 4 orders,
+  respectively, due to incomplete dataset coverage.
 */
 
 
 /* ============================================================
-   YEARLY ORDERS
+   9. YEARLY ORDER VOLUME
 ============================================================ */
 
 SELECT
-    EXTRACT(
-        YEAR
-        FROM o.order_purchase_timestamp::TIMESTAMP
-    ) AS year,
+    EXTRACT(YEAR FROM o.order_purchase_timestamp::TIMESTAMP) AS year,
     COUNT(*) AS orders_count
 FROM orders o
 GROUP BY 1
 ORDER BY 1;
 
 /*
-Results:
+RESULTS:
+- 2016: 329 orders (partial year)
+- 2017: 45,101 orders
+- 2018: 54,011 orders (partial year)
 
-2016 = 329
-2017 = 45,101
-2018 = 54,011
-
-Finding:
-
-Orders increased approximately 20%
-from 2017 to 2018.
+INTERPRETATION:
+The 2018 observed total is higher than the 2017 total, but 2018 is
+incomplete. Use the comparable-period query below for a more reliable
+year-over-year order growth comparison.
 */
 
 
 /* ============================================================
-   EXECUTIVE SUMMARY
+   10. COMPARABLE-PERIOD ORDER GROWTH (JANUARY–AUGUST)
+
+   This uses the same eight calendar months in 2017 and 2018.
+============================================================ */
+
+WITH period_orders AS
+(
+    SELECT
+        EXTRACT(YEAR FROM order_purchase_timestamp::TIMESTAMP) AS year,
+        COUNT(*) AS total_orders
+    FROM orders
+    WHERE
+        EXTRACT(YEAR FROM order_purchase_timestamp::TIMESTAMP) IN (2017, 2018)
+        AND EXTRACT(MONTH FROM order_purchase_timestamp::TIMESTAMP) BETWEEN 1 AND 8
+    GROUP BY 1
+),
+
+order_comparison AS
+(
+    SELECT
+        year,
+        total_orders,
+        LAG(total_orders) OVER (ORDER BY year) AS previous_year_jan_aug_orders
+    FROM period_orders
+)
+
+SELECT
+    year,
+    total_orders AS jan_aug_orders,
+    previous_year_jan_aug_orders,
+    ROUND(
+        (
+            (total_orders - previous_year_jan_aug_orders)::NUMERIC
+            / NULLIF(previous_year_jan_aug_orders, 0) * 100
+        ),
+        2
+    ) AS order_growth_percentage
+FROM order_comparison
+ORDER BY year;
+
+/*
+BUSINESS INSIGHTS:
+- Orders increased from 22,968 in Jan-Aug 2017
+  to 53,991 in Jan-Aug 2018.
+- Like-for-like order growth was approximately 135.07%.
+- Revenue grew by approximately 136.96% over the
+  same period.
+- Revenue growth slightly exceeded order growth,
+  suggesting a modest increase in average revenue
+  per order.
+*/
+
+
+/* ============================================================
+   11. EXECUTIVE SUMMARY
 ============================================================ */
 
 /*
-Marketplace KPIs
+MARKETPLACE OVERVIEW
 
-Total Revenue:
-$16,008,872.12
+Core KPIs:
+- Total payment revenue: R$16,008,872.12
+- Total orders: 99,441
+- Orders with payment records: 99,440
+- Order-level average order value (AOV): R$160.99
 
-Total Orders:
-99,441
+KEY FINDINGS:
 
-Average Order Value:
-$154.10
+1. The marketplace recorded approximately R$16.01 million in payment
+   value across the available dataset.
 
+2. The order-level AOV was R$160.99, calculated by first aggregating
+   all payment records for each order.
 
-Key Insights
+3. November 2017 was the strongest chronological month for both
+   revenue (R$1,194,882.80) and order volume (7,544 orders).
 
-1. Marketplace generated approximately $16 million in revenue.
+4. January–August revenue increased by approximately 136.96% from
+   2017 to 2018, based on a comparable eight-month period.
 
-2. Revenue grew approximately 20% from 2017 to 2018.
+5. The raw annual totals show R$7.25 million in 2017 and R$8.70 million
+   in 2018. Since 2018 is incomplete, this is not a full-year,
+   like-for-like growth comparison.
 
-3. Orders grew approximately 20% from 2017 to 2018.
+6. September and October at the beginning/end of the dataset have
+   incomplete coverage and should be treated cautiously in trend
+   analysis and dashboard reporting.
 
-4. Revenue growth closely mirrors order growth, indicating that
-   growth is primarily driven by increased order volume rather than
-   higher order values.
-
-5. Several edge months appear incomplete and should be excluded 
-   from trend reporting when building dashboards.
+SCOPE NOTE:
+These marketplace overview metrics use payment records across the
+available dataset. Delivered-order revenue and delivered-order AOV
+in 08_dashboard_queries.sql use a different population and revenue
+basis; the two sets of metrics should not be mixed without labeling
+that difference.
 */

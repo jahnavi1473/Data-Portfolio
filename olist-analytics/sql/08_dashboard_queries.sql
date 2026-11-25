@@ -333,7 +333,7 @@ BUSINESS IMPLICATION:
 
 
 /* =============================================================
-					Quantity Sold by Product Category
+			Quantity Sold by Product Category
 ============================================================= */
 
 SELECT
@@ -389,7 +389,7 @@ BUSINESS IMPLICATION:
 
 
 /* =============================================================
-					Category Revenue Contribution (%)
+			Category Revenue Contribution (%)
 
 Business question: What percentage of total revenue does each 
 product category contribute?
@@ -461,7 +461,7 @@ BUSINESS IMPLICATION:
 
 
 /* =============================================================
-					Average Product Price by Category
+			Average Product Price by Category
 ================================================================= */
 
 SELECT
@@ -1100,4 +1100,411 @@ cautiously.
 Further investigation should examine late-delivery rates
 and geographic delivery patterns.
 ========================================================== */
+
+/* ============================================================
+   SECTION 8.5.4 — Late Delivery Rate by Customer State
+
+   BUSINESS QUESTION:
+   Which customer states have the highest percentage of
+   delivered orders that arrived after the estimated date?
+
+   DEFINITION:
+   Late delivery rate = late delivered orders / all delivered
+   orders with both actual and estimated delivery dates.
+   ============================================================ */
+
+SELECT
+    c.customer_state,
+
+    COUNT(DISTINCT o.order_id) AS total_delivered_orders,
+
+    COUNT(DISTINCT o.order_id) FILTER (
+        WHERE o.order_delivered_customer_date::timestamp
+              > o.order_estimated_delivery_date::timestamp
+    ) AS late_orders,
+
+    ROUND(
+        COUNT(DISTINCT o.order_id) FILTER (
+            WHERE o.order_delivered_customer_date::timestamp
+                  > o.order_estimated_delivery_date::timestamp
+        ) * 100.0
+        / NULLIF(COUNT(DISTINCT o.order_id), 0),
+        2
+    ) AS late_delivery_rate_pct
+
+FROM orders o
+
+JOIN customers c
+    ON o.customer_id = c.customer_id
+
+WHERE o.order_status = 'delivered'
+  AND o.order_delivered_customer_date IS NOT NULL
+  AND o.order_estimated_delivery_date IS NOT NULL
+
+GROUP BY c.customer_state
+
+ORDER BY late_delivery_rate_pct DESC;
+
+/* =======
+KEY FINDINGS:
+1. AL recorded the highest late-delivery rate at 23.93%,
+   followed by MA at 19.67% and PI at 15.97%.
+
+2. SP recorded the highest number of late deliveries
+   (2,387 orders), despite a relatively low late-delivery
+   rate of 5.89%, reflecting its significantly higher
+   order volume.
+
+3. The overall late-delivery rate across the 27 states
+   was approximately 8.11%.
+
+BUSINESS IMPLICATION:
+Regional logistics performance varies considerably.
+High-delay states such as AL, MA and PI may require
+further investigation into delivery infrastructure,
+carrier performance and regional logistics constraints.
+
+High-volume states such as SP should also be monitored
+because even a relatively low delay percentage can
+represent a substantial number of delayed orders.
+
+NOTE:
+State-level rates based on smaller order volumes should
+be interpreted cautiously.
+*/
+
+/* ============================================================
+   SECTION 8.6 — Seller Performance
+
+   Business questions:
+   - Which sellers generate the most delivered revenue?
+   - Which sellers have the highest order volume?
+   - What review scores are associated with seller orders?
+
+   NOTE:
+   Olist order_items does not contain a quantity column.
+   COUNT(*) is used to count delivered order-item rows.
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   8.6.1 — Seller Revenue, Order Volume and Items Sold
+   ------------------------------------------------------------ */
+
+SELECT
+    s.seller_id,
+    s.seller_state,
+
+    COUNT(DISTINCT o.order_id) AS delivered_orders,
+
+    COUNT(*) AS delivered_order_items,
+
+    ROUND(
+        SUM(oi.price + oi.freight_value)::numeric,
+        2
+    ) AS delivered_revenue,
+
+    ROUND(
+        (
+            SUM(oi.price + oi.freight_value)
+            / NULLIF(COUNT(DISTINCT o.order_id), 0)
+        )::numeric,
+        2
+    ) AS revenue_per_seller_order
+
+FROM orders o
+
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+
+JOIN sellers s
+    ON oi.seller_id = s.seller_id
+
+WHERE o.order_status = 'delivered'
+
+GROUP BY
+    s.seller_id,
+    s.seller_state
+
+ORDER BY delivered_revenue DESC;
+
+
+/* ------------------------------------------------------------
+   8.6.2 — Seller Review Performance
+
+   Review scores are first averaged at order level. An order
+   containing items from multiple sellers is associated with
+   each seller that fulfilled an item in that order.
+
+   Interpret this as review performance associated with
+   seller orders, not a direct causal measure of seller quality.
+   ------------------------------------------------------------ */
+
+WITH order_review_scores AS
+(
+    SELECT
+        order_id,
+        AVG(review_score::numeric) AS average_order_review_score
+    FROM order_reviews
+    GROUP BY order_id
+),
+
+seller_orders AS
+(
+    SELECT DISTINCT
+        oi.seller_id,
+        o.order_id
+    FROM orders o
+
+    JOIN order_items oi
+        ON o.order_id = oi.order_id
+
+    WHERE o.order_status = 'delivered'
+)
+
+SELECT
+    s.seller_id,
+    s.seller_state,
+
+    COUNT(DISTINCT so.order_id) AS reviewed_delivered_orders,
+
+    ROUND(
+        AVG(ors.average_order_review_score)::numeric,
+        2
+    ) AS average_review_score
+
+FROM seller_orders so
+
+JOIN sellers s
+    ON so.seller_id = s.seller_id
+
+JOIN order_review_scores ors
+    ON so.order_id = ors.order_id
+
+GROUP BY
+    s.seller_id,
+    s.seller_state
+
+ORDER BY average_review_score DESC;
+
+
+/* ------------------------------------------------------------
+   8.6.3 — Top 10 Sellers by Delivered Revenue
+   ------------------------------------------------------------ */
+
+SELECT
+    s.seller_id,
+    s.seller_state,
+
+    COUNT(DISTINCT o.order_id) AS delivered_orders,
+
+    ROUND(
+        SUM(oi.price + oi.freight_value)::numeric,
+        2
+    ) AS delivered_revenue
+
+FROM orders o
+
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+
+JOIN sellers s
+    ON oi.seller_id = s.seller_id
+
+WHERE o.order_status = 'delivered'
+
+GROUP BY
+    s.seller_id,
+    s.seller_state
+
+ORDER BY delivered_revenue DESC
+
+LIMIT 10;
+
+
+/* ------------------------------------------------------------
+   8.6.4 — Seller Revenue Contribution and Cumulative Share
+
+   Business question:
+   How concentrated is delivered revenue across sellers?
+   ------------------------------------------------------------ */
+
+WITH seller_revenue AS
+(
+    SELECT
+        oi.seller_id,
+        SUM(oi.price + oi.freight_value) AS delivered_revenue
+
+    FROM orders o
+
+    JOIN order_items oi
+        ON o.order_id = oi.order_id
+
+    WHERE o.order_status = 'delivered'
+
+    GROUP BY oi.seller_id
+),
+
+ranked_sellers AS
+(
+    SELECT
+        seller_id,
+        delivered_revenue,
+
+        SUM(delivered_revenue) OVER (
+            ORDER BY delivered_revenue DESC
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS cumulative_revenue,
+
+        SUM(delivered_revenue) OVER () AS marketplace_revenue
+
+    FROM seller_revenue
+)
+
+SELECT
+    seller_id,
+
+    ROUND(delivered_revenue::numeric, 2) AS delivered_revenue,
+
+    ROUND(
+        delivered_revenue * 100.0
+        / NULLIF(marketplace_revenue, 0),
+        2
+    ) AS seller_revenue_pct,
+
+    ROUND(
+        cumulative_revenue * 100.0
+        / NULLIF(marketplace_revenue, 0),
+        2
+    ) AS cumulative_revenue_pct
+
+FROM ranked_sellers
+
+ORDER BY delivered_revenue DESC;
+
+
+/* ============================================================
+   SECTION 8.7 — Regional Analysis
+
+   Business questions:
+   - Which customer states generate the most revenue?
+   - Which seller states fulfill the most marketplace revenue?
+   - How does business flow between customer and seller states?
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   8.7.1 — Marketplace Performance by Customer State
+   ------------------------------------------------------------ */
+
+SELECT
+    c.customer_state,
+
+    COUNT(DISTINCT o.order_id) AS delivered_orders,
+
+    COUNT(DISTINCT c.customer_unique_id) AS unique_customers,
+
+    ROUND(
+        SUM(oi.price + oi.freight_value)::numeric,
+        2
+    ) AS delivered_revenue,
+
+    ROUND(
+        (
+            SUM(oi.price + oi.freight_value)
+            / NULLIF(COUNT(DISTINCT o.order_id), 0)
+        )::numeric,
+        2
+    ) AS average_order_value
+
+FROM orders o
+
+JOIN customers c
+    ON o.customer_id = c.customer_id
+
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+
+WHERE o.order_status = 'delivered'
+
+GROUP BY c.customer_state
+
+ORDER BY delivered_revenue DESC;
+
+
+/* ------------------------------------------------------------
+   8.7.2 — Marketplace Performance by Seller State
+   ------------------------------------------------------------ */
+
+SELECT
+    s.seller_state,
+
+    COUNT(DISTINCT o.order_id) AS delivered_orders,
+
+    COUNT(DISTINCT s.seller_id) AS sellers,
+
+    ROUND(
+        SUM(oi.price + oi.freight_value)::numeric,
+        2
+    ) AS delivered_revenue
+
+FROM orders o
+
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+
+JOIN sellers s
+    ON oi.seller_id = s.seller_id
+
+WHERE o.order_status = 'delivered'
+
+GROUP BY s.seller_state
+
+ORDER BY delivered_revenue DESC;
+
+
+/* ------------------------------------------------------------
+   8.7.3 — Customer State vs Seller State
+
+   Business question:
+   Which customer-state and seller-state combinations account
+   for the most delivered orders and revenue?
+
+   Each row represents a customer-state / seller-state pair.
+   An order can appear in more than one pair if it contains
+   items fulfilled by sellers in different states.
+   ------------------------------------------------------------ */
+
+SELECT
+    c.customer_state,
+    s.seller_state,
+
+    COUNT(DISTINCT o.order_id) AS delivered_orders,
+
+    COUNT(*) AS delivered_order_items,
+
+    ROUND(
+        SUM(oi.price + oi.freight_value)::numeric,
+        2
+    ) AS delivered_revenue
+
+FROM orders o
+
+JOIN customers c
+    ON o.customer_id = c.customer_id
+
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+
+JOIN sellers s
+    ON oi.seller_id = s.seller_id
+
+WHERE o.order_status = 'delivered'
+
+GROUP BY
+    c.customer_state,
+    s.seller_state
+
+ORDER BY delivered_revenue DESC;
+
 
