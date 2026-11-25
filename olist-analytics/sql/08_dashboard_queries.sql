@@ -1145,7 +1145,7 @@ GROUP BY c.customer_state
 
 ORDER BY late_delivery_rate_pct DESC;
 
-/* ===========================================================
+/* =======
 KEY FINDINGS:
 1. AL recorded the highest late-delivery rate at 23.93%,
    followed by MA at 19.67% and PI at 15.97%.
@@ -1171,7 +1171,7 @@ represent a substantial number of delayed orders.
 NOTE:
 State-level rates based on smaller order volumes should
 be interpreted cautiously.
-======================================================== */
+*/
 
 /* ============================================================
    SECTION 8.6 — Seller Performance
@@ -1189,9 +1189,6 @@ be interpreted cautiously.
 
 /* ------------------------------------------------------------
    8.6.1 — Seller Revenue, Order Volume and Items Sold
-
-   Business question: How do sellers perform in terms of 
-   order volume, revenue and items sold?
    ------------------------------------------------------------ */
 
 SELECT
@@ -1231,32 +1228,6 @@ GROUP BY
 
 ORDER BY delivered_revenue DESC;
 
-/*
-KEY FINDINGS:
-
-1. Sellers from SP occupy four of the top five
-   revenue positions.
-
-2. The highest-revenue seller generated 247,007.06
-   across 1,124 delivered orders.
-
-3. A seller from BA generated 230,797.02 across
-   only 348 delivered orders, resulting in a much
-   higher revenue per seller order of 663.21.
-
-4. Seller revenue performance varies considerably
-   based on order volume and revenue per order.
-
-BUSINESS IMPLICATION:
-
-Seller performance should be evaluated using both
-revenue contribution and order volume.
-
-High-revenue-per-order sellers may offer opportunities
-to understand product mix and purchasing patterns,
-while high-volume sellers are important to marketplace
-operational performance.
-*/
 
 /* ------------------------------------------------------------
    8.6.2 — Seller Review Performance
@@ -1316,22 +1287,6 @@ GROUP BY
 
 ORDER BY average_review_score DESC;
 
-/*
-KEY FINDINGS — SELLER REVIEW PERFORMANCE
-
-1. Analysed 2,965 sellers with 97,159 reviewed delivered orders.
-2. Average seller-level review score was approximately 4.18/5.
-3. High-volume sellers did not consistently receive high review scores.
-4. Among the five highest-revenue sellers, average review scores
-   ranged from 3.50 to 4.37.
-5. Seller revenue and customer satisfaction should be evaluated
-   together when assessing seller performance.
-
-BUSINESS IMPLICATION:
-Marketplace management should monitor both seller revenue and
-customer review performance. High-revenue sellers with relatively
-low ratings may require further investigation.
-*/
 
 /* ------------------------------------------------------------
    8.6.3 — Top 10 Sellers by Delivered Revenue
@@ -1366,32 +1321,6 @@ ORDER BY delivered_revenue DESC
 
 LIMIT 10;
 
-/*
-KEY FINDINGS — TOP 10 SELLERS BY DELIVERED REVENUE
-
-1. The highest-revenue seller generated 247,007.06
-   across 1,124 delivered orders.
-
-2. 9 out of the top 10 sellers are located in São Paulo (SP),
-   indicating a strong concentration of high-revenue sellers
-   in this state.
-
-3. The seller with the highest delivered order volume recorded
-   1,772 orders and generated 231,220.43 in revenue.
-
-4. A seller from Bahia (BA) generated 230,797.02 from only
-   348 delivered orders, indicating a high revenue per order.
-
-5. The tenth-ranked seller generated 156,606.48 in delivered
-   revenue.
-
-BUSINESS IMPLICATION:
-
-High-revenue sellers are predominantly concentrated in SP.
-However, order volume alone does not determine revenue
-contribution. Seller performance should be evaluated using
-both delivered revenue and order volume.
-*/
 
 /* ------------------------------------------------------------
    8.6.4 — Seller Revenue Contribution and Cumulative Share
@@ -1438,49 +1367,21 @@ SELECT
     ROUND(delivered_revenue::numeric, 2) AS delivered_revenue,
 
     ROUND(
-    (
         delivered_revenue * 100.0
-        / NULLIF(marketplace_revenue, 0)
-    )::numeric,
-    2
-) AS seller_revenue_pct,
+        / NULLIF(marketplace_revenue, 0),
+        2
+    ) AS seller_revenue_pct,
 
-ROUND(
-    (
+    ROUND(
         cumulative_revenue * 100.0
-        / NULLIF(marketplace_revenue, 0)
-    )::numeric,
-    2
-) AS cumulative_revenue_pct
+        / NULLIF(marketplace_revenue, 0),
+        2
+    ) AS cumulative_revenue_pct
 
 FROM ranked_sellers
 
 ORDER BY delivered_revenue DESC;
 
-/*
-KEY FINDINGS — SELLER REVENUE CONTRIBUTION AND CUMULATIVE SHARE
-
-1. Analysed 2,970 sellers contributing to delivered revenue.
-
-2. The top 10 sellers contribute 12.93% of total delivered revenue.
-
-3. The top 50 sellers contribute 32.54% of total delivered revenue.
-
-4. The top 100 sellers contribute 44.81% of total delivered revenue.
-
-5. Approximately 132 sellers (4.44% of sellers) account for
-   50% of total delivered revenue.
-
-6. Approximately 551 sellers (18.55% of sellers) account for
-   80% of total delivered revenue.
-
-BUSINESS IMPLICATION:
-
-Marketplace revenue is concentrated among a relatively small
-group of sellers. Monitoring high-contribution sellers is
-important for revenue stability, while developing smaller
-sellers may create opportunities for marketplace growth.
-*/
 
 /* ============================================================
    SECTION 8.7 — Regional Analysis
@@ -1502,8 +1403,8 @@ SELECT
     COUNT(DISTINCT o.order_id) AS delivered_orders,
 
     COUNT(DISTINCT c.customer_unique_id) AS unique_customers,
-	
-	ROUND(
+
+    ROUND(
         SUM(oi.price + oi.freight_value)::numeric,
         2
     ) AS delivered_revenue,
@@ -1529,38 +1430,6 @@ WHERE o.order_status = 'delivered'
 GROUP BY c.customer_state
 
 ORDER BY delivered_revenue DESC;
-
-/*
-KEY FINDINGS — MARKETPLACE PERFORMANCE BY CUSTOMER STATE
-
-1. São Paulo (SP) generated the highest delivered revenue
-   of 5,769,703.15 across 40,501 delivered orders.
-
-2. Rio de Janeiro (RJ) and Minas Gerais (MG) ranked second
-   and third in delivered revenue.
-
-3. SP, RJ and MG together contributed approximately 62.2%
-   of total delivered revenue.
-
-4. São Paulo recorded the highest order volume but an
-   average order value of 142.46.
-
-5. Paraíba (PB) recorded the highest average order value
-   of 266.61, despite having only 517 delivered orders.
-
-6. Several lower-volume states, including AC, AL and RO,
-   also recorded relatively high average order values.
-
-BUSINESS IMPLICATION:
-
-The marketplace has a strong revenue concentration in
-SP, RJ and MG. These states are important markets for
-retaining customers and sustaining revenue.
-
-At the same time, states with higher average order values
-but lower order volumes may represent opportunities for
-customer acquisition and market expansion.
-*/
 
 
 /* ------------------------------------------------------------
@@ -1592,32 +1461,6 @@ WHERE o.order_status = 'delivered'
 GROUP BY s.seller_state
 
 ORDER BY delivered_revenue DESC;
-
-/*
-KEY FINDINGS — MARKETPLACE PERFORMANCE BY SELLER STATE
-
-1. São Paulo (SP) generated the highest delivered revenue
-   of 9,957,056.91, supported by 1,769 sellers.
-
-2. SP contributed approximately 64.6% of total seller-state
-   delivered revenue.
-
-3. Paraná (PR) and Minas Gerais (MG) ranked second and third
-   in seller-state delivered revenue.
-
-4. Seller revenue contribution varies significantly across
-   states and is not directly proportional to seller count.
-
-5. Bahia (BA) generated 297,146.93 in delivered revenue
-   with only 18 sellers.
-
-BUSINESS IMPLICATION:
-
-The marketplace's seller-side revenue is highly concentrated
-in São Paulo. Understanding seller distribution and revenue
-contribution across other states can help identify regional
-supply gaps and opportunities for seller expansion.
-*/
 
 
 /* ------------------------------------------------------------
@@ -1665,31 +1508,3 @@ GROUP BY
 ORDER BY delivered_revenue DESC;
 
 
-/*
-KEY FINDINGS — CUSTOMER STATE VS SELLER STATE
-
-1. The SP customer–SP seller combination generated the highest
-   delivered revenue of 3,990,103.25 across 30,834 orders.
-
-2. São Paulo sellers serve customers across multiple states.
-   Major combinations include:
-   - RJ customers and SP sellers: 1,256,630.90
-   - MG customers and SP sellers: 1,100,460.81
-   - RS customers and SP sellers: 524,833.37
-
-3. Cross-state transactions represent significant marketplace
-   activity, with several high-revenue customer–seller
-   combinations involving different states.
-
-4. Same-state transactions are particularly significant in SP.
-   Other states also generate revenue through both local and
-   cross-state seller relationships.
-
-BUSINESS IMPLICATION:
-
-São Paulo is an important seller hub serving customers both
-within and outside its state. Understanding customer–seller
-geographical relationships can help the marketplace evaluate
-regional supply distribution, fulfilment coverage and potential
-opportunities for seller expansion.
-*/
